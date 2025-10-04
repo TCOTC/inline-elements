@@ -11,6 +11,9 @@ importers:
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
+      siyuan:
+        specifier: ^1.1.5
+        version: 1.1.5
     devDependencies:
       '@types/node':
         specifier: ^24.6.2
@@ -850,6 +853,9 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
+  siyuan@1.1.5:
+    resolution: {integrity: sha512-euXC+H/gmSpqOjTW3T6hefqZWxWVk9L9IVKczl3jR3xkeZtmmcmvrTxn6ONgtB7aoXG10TsA//26+b9ILoStyw==}
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -1674,6 +1680,8 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   signal-exit@4.1.0: {}
+
+  siyuan@1.1.5: {}
 
   source-map-js@1.2.1: {}
 

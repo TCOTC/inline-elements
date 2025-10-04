@@ -11,10 +11,13 @@ const projectRoot = join(__dirname, '..')
 // 防抖机制，避免重复执行
 let buildTimeout = null
 let isBuilding = false
+let pendingBuild = false // 标记是否有待执行的构建
 
 function debouncedBuild() {
+  // 如果正在构建，标记有待执行的构建，但不跳过
   if (isBuilding) {
-    console.log('⏳ 构建正在进行中，跳过重复请求...')
+    console.log('⏳ 构建正在进行中，标记待执行构建...')
+    pendingBuild = true
     return
   }
   
@@ -28,6 +31,12 @@ function debouncedBuild() {
       await devBuild()
     } finally {
       isBuilding = false
+      // 如果构建完成后还有待执行的构建，立即执行
+      if (pendingBuild) {
+        pendingBuild = false
+        console.log('🔄 执行待处理的构建...')
+        setTimeout(() => debouncedBuild(), 100) // 短暂延迟后执行
+      }
     }
   }, 300) // 300ms 防抖延迟
 }
@@ -122,19 +131,31 @@ if (isWatchMode) {
   console.log('🚀 启动 Vite 监听模式...')
   const viteProcess = exec('vite build --mode development --watch')
   
-  // 只监听 dist 目录下的文件变化
+  // 监听 dist 目录和源文件的变化
   const distDir = join(projectRoot, 'dist')
   const assetsDir = join(distDir, 'assets')
+  const srcDir = join(projectRoot, 'src')
   
   // 监听 assets 目录
   if (existsSync(assetsDir)) {
     watch(assetsDir, { recursive: true }, (eventType, filename) => {
       if (filename && (filename.endsWith('.js') || filename.endsWith('.css'))) {
-        console.log(`📁 检测到文件变化: ${filename}`)
+        console.log(`📁 检测到 dist 文件变化: ${filename}`)
         debouncedBuild()
       }
     })
     console.log('✅ 正在监听 dist/assets 目录...')
+  }
+  
+  // 监听源文件变化
+  if (existsSync(srcDir)) {
+    watch(srcDir, { recursive: true }, (eventType, filename) => {
+      if (filename && (filename.endsWith('.scss') || filename.endsWith('.ts') || filename.endsWith('.html'))) {
+        console.log(`📁 检测到源文件变化: ${filename}`)
+        debouncedBuild()
+      }
+    })
+    console.log('✅ 正在监听 src 目录...')
   }
   
   // 保持进程运行

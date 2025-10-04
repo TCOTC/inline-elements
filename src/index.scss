@@ -1,28 +1,50 @@
-#widget-inline-extractor {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-}
-#toggleButton {
-  width: 100px;
-  height: 30px;
+/* ==================== 小部件控制面板样式 ==================== */
+#controlPanel {
+  position: fixed;           /* 固定定位，始终显示在页面左上角 */
+  inset-inline-start: 10px;  /* 距离左侧 10px */
+  inset-block-start: 10px;   /* 距离顶部 10px */
+  display: flex;             /* 使用 flex 布局 */
+  align-items: center;       /* 垂直居中对齐 */
+  gap: 8px;                  /* 子元素间距 8px */
 }
 
-#myDropdown {
-  width: 60px;
-  height: 30px;
+/* ==================== 下拉选择框样式 ==================== */
+select {
+  width: 120px;              /* 选择框宽度 */
+  height: 30px;              /* 选择框高度 */
+  padding-inline: 6px;       /* 内边距 */
+  border: 1px solid #ddd;  /* 边框样式 */
+  border-radius: 4px;        /* 圆角 */
+  background-color: #fff;  /* 背景色 */
+  font-size: 13px;           /* 字体大小 */
+  color: #333;             /* 文字颜色 */
+  outline: none;             /* 移除默认轮廓 */
+  cursor: pointer;           /* 鼠标悬停时显示手型光标 */
+
+  &:hover {
+    border-color: #999;    /* 悬停时边框颜色变深 */
+  }
+
+  &:focus {
+    border-color: #666;    /* 聚焦时边框颜色变深 */
+  }
 }
+
+/* ==================== 内容列表样式 ==================== */
 #contentList {
-  padding-top: 30px;
-}
-#contentList li {
-  padding: 5px;
-  background-color: #f2f2f2;
-  border-radius: 5px;
-  margin-bottom: 5px;
-  color: black;
-}
-#contentList li a {
-  color: black;
-  text-decoration: none;
+  padding-top: 32px;             /* 顶部留白，避免与控制面板重叠 */
+  padding-inline-start: 24px;    /* 内联起始边距 */
+
+  li {
+    padding: 5px;                /* 内边距 */
+    background-color: #f2f2f2; /* 浅灰色背景 */
+    border-radius: 5px;          /* 圆角 */
+    margin-bottom: 5px;          /* 底部间距 */
+    color: black;              /* 文字颜色 */
+
+    a {
+      color: black;            /* 链接文字颜色 */
+      text-decoration: none;     /* 移除下划线 */
+    }
+  }
 }

@@ -1,26 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- 基础元数据设置 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Summary Inline Elements</title>
+  
+  <!-- 引入样式文件 -->
   <style src="./index.scss"></style>
+  
+  <!-- 引入 TypeScript 主程序文件 -->
   <script type="module" src="./index.ts"></script>
 </head>
 <body id="seqID">
-  <div id="widget-inline-extractor">
-    <button id="toggleButton">包含嵌入块</button>
-    <select id="myDropdown">
-      <option value="mark">mark</option>
-      <option value="strong">strong</option>
-      <option value="code">code</option>
-      <option value="tag">tag</option>
-      <option value="inline-math">inline-math</option>
-      <option value="inline-memo">inline-memo</option>
-      <option value="em">em</option>
-      <option value="u">u</option>
+  <!-- ==================== 小部件控制面板 ==================== -->
+  <div id="controlPanel">
+    <!-- 内联元素类型选择下拉框 -->
+    <select id="filterType">
+      <option value="mark">mark</option>               <!-- 标记 -->
+      <option value="strong">strong</option>           <!-- 粗体 -->
+      <option value="tag">tag</option>                 <!-- 标签 -->
+      <option value="em">em</option>                   <!-- 斜体 -->
+      <option value="u">u</option>                     <!-- 下划线 -->
+      <option value="code">code</option>               <!-- 行级代码 -->
+      <option value="inline-math">inline-math</option> <!-- 行级公式 -->
+      <option value="inline-memo">inline-memo</option> <!-- 备注 -->
+    </select>
+    
+    <!-- 切换是否包含嵌入块内容的下拉选择框 -->
+    <select id="embedBlocks">
+      <option value="false">不包含嵌入块</option>
+      <option value="true">包含嵌入块</option>
     </select>
   </div>
+  
+  <!-- ==================== 内容展示区域 ==================== -->
+  <!-- 用于显示筛选出的内联元素链接列表 -->
   <ul id="contentList"></ul>
 </body>
 </html>
