@@ -1,0 +1,25 @@
+{
+  "name": "inline-elements",
+  "author": "TCOTC",
+  "url": "https://github.com/TCOTC/inline-elements",
+  "version": "0.0.1",
+  "minAppVersion": "3.1.0",
+  "displayName": {
+    "default": "Summary Inline Elements",
+    "zh_CN": "汇总行级元素"
+  },
+  "description": {
+    "default": "Summarize inline elements in the document",
+    "zh_CN": "在文档中汇总行级元素"
+  },
+  "readme": {
+    "default": "README.md",
+    "zh_CN": "README_zh_CN.md"
+  },
+  "funding": {
+    "custom": [
+      "https://bento.me/jeffff"
+    ]
+  },
+  "keywords": ["行内元素"]
+}
