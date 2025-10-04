@@ -1,0 +1,20 @@
+{
+  "name": "inline-elements",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-build.js --watch",
+    "build": "vite build && node scripts/build-package.js",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.2",
+    "sass-embedded": "^1.69.5",
+    "terser": "^5.24.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.9"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1"
+  }
+}
