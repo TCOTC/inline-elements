@@ -2,15 +2,17 @@
   "name": "inline-elements",
   "author": "TCOTC",
   "url": "https://github.com/TCOTC/inline-elements",
-  "version": "0.0.1",
-  "minAppVersion": "3.1.0",
+  "version": "0.1.0",
+  "minAppVersion": "3.0.0",
   "displayName": {
     "default": "Summary Inline Elements",
-    "zh_CN": "汇总行级元素"
+    "zh_CN": "汇总行级元素",
+    "zh_TW": "匯總行級元素"
   },
   "description": {
     "default": "Summarize inline elements in the document",
-    "zh_CN": "在文档中汇总行级元素"
+    "zh_CN": "在文档中汇总行级元素",
+    "zh_TW": "在文件中匯總行級元素"
   },
   "readme": {
     "default": "README.md",
@@ -21,5 +23,9 @@
       "https://bento.me/jeffff"
     ]
   },
-  "keywords": ["行内元素"]
+  "keywords": [
+    "汇总行内元素", "行内元素汇总", "行级元素汇总",
+    "匯總行內元素", "行內元素匯總", "行級元素匯總",
+    "summary inline element"
+  ]
 }
