@@ -1,28 +1,51 @@
+import { i18n } from "./i18n";
+
 // ==================== 全局变量定义 ====================
+const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-"; // 挂件属性前缀
+
+// 当前选中的内联元素类型，默认为 "mark"（标记）
+let filterType: string = "mark";
+
+// 控制是否包含嵌入块内容的标志位
+let isEmbedBlocks: boolean = false;
+
+// TODO: 删除这个 randomId；后面要改成靠 SQL 查询数据
 // 为 iframe 设置随机 id，防止多窗口窜数据
 // 当页面中有多个相同的小部件时，通过随机 id 来区分不同的实例
 const randomId: string = "id_" + Math.random().toString(36).substr(2, 9);
 document.body.id = randomId;
 
-// 挂件块
+// ==================== 获取 DOM 元素并设置语言 ====================
+// 挂件块本身
 const widgetBlock: Element | null = window.frameElement?.closest("[data-node-id]") || null;
 const widgetBlockId: string | null = widgetBlock?.getAttribute("data-node-id") || null;
 
-// 控制是否包含嵌入块内容的标志位
-let isEmbedBlocks: boolean = false;
+// 设置语言
+const i18nType = widgetBlock?.closest("html")?.getAttribute("lang") || "en_US";
+const isI18nSupported = !!i18n[i18nType];
+document.documentElement.lang = isI18nSupported ? i18nType : "en_US";
 
-// 当前选中的内联元素类型，默认为 "mark"（标记）
-let filterType: string = "mark";
+// 获取行级元素类型下拉选择框
+const filterTypeElement = document.getElementById("filterType") as HTMLSelectElement | null;
+if (isI18nSupported) {
+  filterTypeElement?.querySelectorAll(":scope > option").forEach((child: Element) => {
+    const text = i18n[i18nType]["text-" + (child as HTMLOptionElement).value];
+    if (text) {
+      (child as HTMLOptionElement).textContent = text;
+    }
+  });
+}
 
-// 挂件属性前缀常量
-const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-";
-
-// ==================== DOM 元素获取 ====================
-// 获取嵌入块选择下拉框元素（控制是否包含嵌入块）
-const embedBlocksElement: HTMLSelectElement | null = document.getElementById("embedBlocks") as HTMLSelectElement;
-
-// 获取下拉选择框元素（选择内联元素类型）
-const dropdown: HTMLSelectElement | null = document.getElementById("filterType") as HTMLSelectElement;
+// 获取嵌入块选择下拉框
+const embedBlocksElement = document.getElementById("embedBlocks") as HTMLSelectElement | null;
+if (isI18nSupported) {
+  embedBlocksElement?.querySelectorAll(":scope > option").forEach((child: Element) => {
+    const text = i18n[i18nType]["embedBlocks-" + (child as HTMLOptionElement).value];
+    if (text) {
+      (child as HTMLOptionElement).textContent = text;
+    }
+  });
+}
 
 // ==================== 事件监听器设置 ====================
 // 为嵌入块选择下拉框添加变化事件监听器
@@ -42,14 +65,14 @@ if (embedBlocksElement) {
 }
 
 // 为下拉选择框添加变化事件监听器
-if (dropdown) {
-  dropdown.addEventListener("change", function (): void {
+if (filterTypeElement) {
+  filterTypeElement.addEventListener("change", function (): void {
     // 更新选中的内联元素类型
-    filterType = dropdown.value;
+    filterType = filterTypeElement.value;
     
     // 设置挂件块属性
     setBlockAttrs(widgetBlockId, {
-      "filter-type": dropdown.value
+      "filter-type": filterTypeElement.value
     });
     
     // 重新初始化内容列表
@@ -94,8 +117,8 @@ function loadBlockAttrs(): void {
   if (filterTypeAttr) {
     filterType = filterTypeAttr;
     // 更新下拉框显示
-    if (dropdown) {
-      dropdown.value = filterType;
+    if (filterTypeElement) {
+      filterTypeElement.value = filterType;
     }
   }
 }
