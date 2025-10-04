@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- 基础元数据设置 -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Summary Inline Elements</title>
-  
-  <!-- 引入样式文件 -->
+  <svg style="display: none;">
+    <symbol id="iconRefresh" viewBox="0 0 32 32">
+      <path d="M6.662 16.074q0 0.688 0.086 1.345t0.27 1.26q0.135 0.504-0.049 0.989t-0.639 0.694q-0.467 0.221-0.94 0.018t-0.633-0.682q-0.295-0.897-0.424-1.794t-0.129-1.831q0-4.866 3.465-8.343t8.33-3.477h1.143l-1.941-1.941q-0.332-0.332-0.332-0.811t0.332-0.811 0.823-0.332 0.823 0.332l3.956 3.931q0.369 0.369 0.369 0.86t-0.369 0.86l-3.931 3.932q-0.332 0.332-0.836 0.332t-0.836-0.332-0.332-0.836 0.332-0.836l1.892-1.892h-1.094q-3.858 0-6.598 2.746t-2.74 6.616zM25.338 16q0-0.688-0.086-1.345t-0.27-1.284q-0.16-0.504 0.024-0.989t0.639-0.694q0.467-0.221 0.927-0.018t0.621 0.682q0.319 0.897 0.461 1.806t0.141 1.843q0 4.866-3.465 8.343t-8.33 3.477h-1.192l1.941 1.941q0.332 0.332 0.332 0.811t-0.332 0.811-0.823 0.332-0.823-0.332l-3.957-3.931q-0.369-0.369-0.369-0.86t0.369-0.86l3.957-3.956q0.332-0.332 0.823-0.332t0.823 0.332 0.332 0.823-0.332 0.823l-1.941 1.941h1.192q3.858 0 6.598-2.746t2.74-6.616z"></path>
+    </symbol>
+  </svg>
   <style src="./index.scss"></style>
-  
-  <!-- 引入 TypeScript 主程序文件 -->
   <script type="module" src="./index.ts"></script>
 </head>
-<body id="seqID">
-  <!-- ==================== 小部件控制面板 ==================== -->
+<body>
   <div id="controlPanel">
-    <!-- 内联元素类型选择下拉框 -->
     <select id="filterType">
       <option value="mark"></option>        <!-- 标记 -->
       <option value="strong"></option>      <!-- 粗体 -->
@@ -27,15 +25,18 @@
       <option value="inline-memo"></option> <!-- 备注 -->
     </select>
     
-    <!-- 切换是否包含嵌入块内容的下拉选择框 -->
     <select id="embedBlocks">
-      <option value="false"></option>      <!-- 不包含嵌入块 -->
-      <option value="true"></option>       <!-- 包含嵌入块 -->
+      <option value="false"></option>      <!-- 排除嵌入块中的元素 -->
+      <option value="true"></option>       <!-- 包含嵌入块中的元素 -->
     </select>
+    
+    <button id="refreshList" type="button">
+      <svg width="16" height="16" viewBox="0 0 32 32">
+        <use href="#iconRefresh"></use>
+      </svg>
+    </button>
   </div>
   
-  <!-- ==================== 内容展示区域 ==================== -->
-  <!-- 用于显示筛选出的内联元素链接列表 -->
   <ul id="contentList"></ul>
 </body>
 </html>

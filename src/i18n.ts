@@ -1,7 +1,7 @@
 export const i18n: Record<string, Record<string, string>> = {
   "zh_CN": {
-    "embedBlocks-true": "包含嵌入块",
-    "embedBlocks-false": "不包含嵌入块",
+    "embedBlocks-true": "包含嵌入块中的元素",
+    "embedBlocks-false": "排除嵌入块中的元素",
     "text-mark": "标记",
     "text-strong": "粗体",
     "text-tag": "标签",
@@ -10,11 +10,14 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-code": "行级代码",
     "text-inline-math": "行级公式",
     "text-inline-memo": "备注",
+    "refreshList": "刷新列表",
+    "loadingMessage": "正在解析文档，请稍候...",
+    "noResultsMessage": "无查询结果",
     "errorMessage": "异常：无法获取到必要的挂件元素，挂件加载失败"
   },
   "zh_CHT": {
-    "embedBlocks-true": "包含嵌入塊",
-    "embedBlocks-false": "不包含嵌入塊",
+    "embedBlocks-true": "包含嵌入塊中的元素",
+    "embedBlocks-false": "排除嵌入塊中的元素",
     "text-mark": "標記",
     "text-strong": "粗體",
     "text-tag": "標籤",
@@ -23,11 +26,14 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-code": "行級代碼",
     "text-inline-math": "行級公式",
     "text-inline-memo": "備註",
+    "refreshList": "刷新列表",
+    "loadingMessage": "正在解析文檔，請稍候...",
+    "noResultsMessage": "無查詢結果",
     "errorMessage": "異常：無法獲取到必要的掛件元素，掛件加載失敗"
   },
   "en_US": {
-    "embedBlocks-true": "Include Embed Blocks",
-    "embedBlocks-false": "Exclude Embed Blocks",
+    "embedBlocks-true": "Include Embed Blocks Elements",
+    "embedBlocks-false": "Exclude Embed Blocks Elements",
     "text-mark": "Mark",
     "text-strong": "Bold",
     "text-tag": "Tag",
@@ -36,6 +42,9 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-code": "Inline Code",
     "text-inline-math": "Inline Math",
     "text-inline-memo": "Memo",
+    "refreshList": "Refresh List",
+    "loadingMessage": "Parsing document, please wait...",
+    "noResultsMessage": "No results found",
     "errorMessage": "Error: Failed to get necessary widget elements, widget loading failed"
   }
 };

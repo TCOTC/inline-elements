@@ -11,6 +11,7 @@
 /* ==================== 下拉选择框样式 ==================== */
 select {
   width: auto;               /* 自适应宽度 */
+  min-width: 75px;           /* 最小宽度（JS 设置文案之前的下拉框宽度很小，用于视觉防抖） */
   height: 30px;              /* 选择框高度 */
   padding-inline: 6px;       /* 内边距 */
   border: 1px solid #ddd;  /* 边框样式 */
@@ -27,6 +28,38 @@ select {
 
   &:focus {
     border-color: #666;    /* 聚焦时边框颜色变深 */
+  }
+}
+
+/* ==================== 刷新按钮样式 ==================== */
+#refreshList {
+  width: 30px;               /* 按钮宽度 */
+  height: 30px;              /* 按钮高度 */
+  border: 1px solid #ddd;  /* 边框样式 */
+  border-radius: 4px;        /* 圆角 */
+  background-color: #fff;  /* 背景色 */
+  color: #333;             /* 文字颜色 */
+  outline: none;             /* 移除默认轮廓 */
+  cursor: pointer;           /* 鼠标悬停时显示手型光标 */
+  display: flex;             /* 使用 flex 布局 */
+  align-items: center;       /* 垂直居中对齐 */
+  justify-content: center;   /* 水平居中对齐 */
+  transition: all 0.2s ease; /* 过渡动画 */
+
+  svg {
+    width: 16px;             /* SVG 图标宽度 */
+    height: 16px;            /* SVG 图标高度 */
+    fill: currentColor;      /* 使用当前文字颜色填充 */
+  }
+
+  &:hover {
+    border-color: #999;        /* 悬停时边框颜色变深 */
+    background-color: #f5f5f5; /* 悬停时背景色变浅 */
+  }
+
+  &:active {
+    background-color: #e5e5e5; /* 点击时背景色变深 */
+    transform: scale(0.95);      /* 点击时轻微缩小 */
   }
 }
 
@@ -49,6 +82,12 @@ select {
   }
 }
 
+/* ==================== 消息样式 ==================== */
+#message {
+  padding: 10px;
+  text-align: center;
+  color: #666;
+}
 #errorMessage {
   justify-self: center;
   font-size: 1.25em;
