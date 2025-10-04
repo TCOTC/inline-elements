@@ -10,7 +10,7 @@
 
 /* ==================== 下拉选择框样式 ==================== */
 select {
-  width: 120px;              /* 选择框宽度 */
+  width: auto;               /* 自适应宽度 */
   height: 30px;              /* 选择框高度 */
   padding-inline: 6px;       /* 内边距 */
   border: 1px solid #ddd;  /* 边框样式 */
@@ -47,4 +47,11 @@ select {
       text-decoration: none;     /* 移除下划线 */
     }
   }
+}
+
+#errorMessage {
+  justify-self: center;
+  font-size: 1.25em;
+  font-weight: bold;
+  color: red;
 }
