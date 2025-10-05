@@ -7,4 +7,13 @@
 
 ### 致谢
 
-感谢 [widget-inline-extractor](https://github.com/hqweay/widget-inline-extractor) 的作者 [hqweay](https://github.com/hqweay) 为本项目提供了灵感。
+感谢 [行内元素抓取](https://github.com/hqweay/widget-inline-extractor) 挂件的作者 [hqweay](https://github.com/hqweay) 为本项目提供了灵感。
+
+### 从 行内元素抓取 挂件迁移
+
+1. 打开全局搜索，切换到 SQL 搜索方式，搜索：
+  
+    `SELECT * FROM blocks WHERE markdown LIKE '<iframe src="/widgets/widget-inline-extractor%';`
+
+2. 搜索结果会显示工作空间中的所有 行内元素抓取 挂件块
+3. 手动一个个插入本挂件，然后删除 行内元素抓取 挂件块

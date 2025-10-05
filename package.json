@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/dev-build.js --watch",
-    "build": "vite build && node scripts/build-package.js",
-    "preview": "vite preview"
+    "build": "vite build && node scripts/build-package.js"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
