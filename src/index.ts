@@ -1,21 +1,42 @@
+/**
+To-dos:
+- [x] 确认能解决 https://github.com/hqweay/widget-inline-extractor/issues 里的问题
+- [x] 支持在导出预览模式使用
+- [x] 支持在导出图片/PDF时使用：隐藏 iframe 边框、隐藏控制面板
+- [x] 测试在发布服务是否正常工作、不报错
+- [x] 暗黑模式的样式，需要从 iframe 外获取颜色变量实际值，genList 的时候也要刷新一次
+- [ ] 支持所有行级元素
+- [ ] 移除所有 console.log / error
+- [ ] 把主空间里使用到 widget-inline-extractor 挂件的地方，改为使用本挂件
+*/
+
 import { i18n } from "./i18n";
 
 // 用函数包裹，方便直接 return
-function main(): void {
+async function main(): Promise<void> {
 // ==================== 全局变量定义 ====================
 const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-"; // 挂件属性前缀
 
 // 当前选中的内联元素类型，默认为 "mark"（标记）
 let filterType: string = "mark";
-const filterTypeList: Set<string> = new Set(["mark", "strong", "tag", "em", "u", "code", "inline-math", "inline-memo"]);
+const allFilterTypes: Set<string> = new Set(["mark", "strong", "tag", "em", "u", "code", "inline-math", "inline-memo"]);
+// TODO: 通过 JS 生成 option 元素；按实际使用情况排一下序
+// textmark a	链接
+// textmark block-ref	引用
+// textmark code	行内代码
+// textmark inline-memo	备注
+// textmark tag	#标签#
+// textmark inline-math	行内公式
+// textmark mark	高亮标记
+// textmark em	HTML tag
+// textmark s	HTML tag
+// textmark strong	HTML tag
+// textmark sub	HTML tag
+// textmark sup	HTML tag
+// textmark u	HTML tag
 
 // 控制是否包含嵌入块内容的标志位，默认为 false（不包含）
 let isEmbedBlocks: boolean = false;
-
-// TODO: 删除这个 randomId；后面要改成靠 SQL 查询数据
-// 当页面中有多个相同的小部件时，通过随机 id 来区分不同的实例
-const randomId: string = "id_" + Math.random().toString(36).substr(2, 9);
-document.body.id = randomId;
 
 // ==================== 获取 DOM 元素并设置语言 ====================
 // 获取挂件块本身
@@ -24,6 +45,7 @@ let widgetBlockId: string | null = null;
 let widgetBlock: Element | null = window.frameElement?.closest("[data-node-id], [id]") || null;
 if (widgetBlock) {
   widgetBlockId = widgetBlock?.getAttribute("data-node-id") || null;
+  // 导出图片/PDF时同时存在 data-node-id 和 id 属性，所以这个情况下就不算导出预览模式
   if (!widgetBlockId) {
     widgetBlockId = widgetBlock?.getAttribute("id") || null;
     isPreviewMode = true;
@@ -33,7 +55,8 @@ if (widgetBlock) {
 const isWidgetBlockId = !!widgetBlockId && /^[0-9]{14}-[a-z0-9]{7}$/.test(widgetBlockId);
 
 // 设置语言
-let i18nType = widgetBlock?.closest("html")?.getAttribute("lang") || "en_US";
+const htmlElement = widgetBlock?.closest("html");
+let i18nType = htmlElement?.getAttribute("lang") || "en_US";
 if (!i18n[i18nType]) i18nType = "en_US";
 document.documentElement.lang = i18nType;
 
@@ -44,24 +67,33 @@ const refreshListElement = document.getElementById("refreshList") as HTMLButtonE
 const contentListElement = document.getElementById("contentList") as HTMLElement | null;
 
 // 未获取到必要的挂件元素时显示错误消息并退出
-if (!widgetBlock || !isWidgetBlockId || !filterTypeElement || !embedBlocksElement || !refreshListElement || !contentListElement) {
+if (!widgetBlock || !isWidgetBlockId || !htmlElement || !filterTypeElement || !embedBlocksElement || !refreshListElement || !contentListElement) {
   document.body.innerHTML = `<div id="errorMessage">${i18n[i18nType].errorMessage}</div>`;
-  console.error("未获取到必要的挂件元素:", widgetBlock, isWidgetBlockId, filterTypeElement, embedBlocksElement, refreshListElement, contentListElement);
+  console.error("inline-elements widget: Necessary widget elements not retrieved:", {widgetBlock, isWidgetBlockId, htmlElement, filterTypeElement, embedBlocksElement, refreshListElement, contentListElement});
   return;
 }
+
+let isExportMode = false; // 是否是导出图片/PDF模式
+let isExportIMG = !!widgetBlock?.closest(".export-img"); // 是否是导出图片模式
+let isExportPDF = !!widgetBlock?.closest("#preview"); // 是否是导出 PDF 模式
+if (isExportIMG || isExportPDF) {
+  isExportMode = true;
+}
+
+await copyThemeStyle();
 
 // 加载挂件配置
 let filterTypeInit = false;
 let embedBlocksInit = false;
 const filterTypeAttr = widgetBlock.getAttribute(`${WIDGET_ATTR_PREFIX}filter-type`);
-if (filterTypeAttr && filterTypeList.has(filterTypeAttr)) {
+if (filterTypeAttr && allFilterTypes.has(filterTypeAttr)) {
   // 验证 filterTypeAttr 是否在 filterTypeList 中，避免 SQL 注入
   filterType = filterTypeAttr;
   filterTypeElement.value = filterTypeAttr;
 } else {
   filterTypeInit = true;
   setTimeout(() => {
-    if (filterTypeInit) {
+    if (filterTypeInit && !isExportMode) {
       setBlockAttrs(widgetBlockId, {
         "filter-type": filterType
       });
@@ -83,57 +115,73 @@ if (embedBlocksAttr) {
   }, 1000);
 }
 
-// 设置元素文案
-filterTypeElement.querySelectorAll(":scope > option").forEach((option: Element) => {
-  const text = i18n[i18nType]["text-" + (option as HTMLOptionElement).value];
-  option.textContent = text;
-});
-embedBlocksElement.querySelectorAll(":scope > option").forEach((option: Element) => {
-  const text = i18n[i18nType]["embedBlocks-" + (option as HTMLOptionElement).value];
-  option.textContent = text;
-});
-refreshListElement.title = i18n[i18nType]["refreshList"];
-
-
-// ==================== 事件监听器设置 ====================
-// 为行级元素类型下拉选择框添加变化事件监听器
-filterTypeElement.addEventListener("change", function (): void {
-  if (filterTypeInit) {
-    filterTypeInit = false;
+if (isExportMode) {
+  // 设置导出模式样式
+  document.body.classList.add("exportMode");
+  // 初始化
+  await genList();
+  // 获取 html 元素包含外边距的实际高度，并适当增加高度以避免出现滚动条
+  const bodyHeight = document.documentElement.getBoundingClientRect().height;
+  const iframe = widgetBlock.querySelector("iframe") as HTMLIFrameElement;
+  iframe.style.border = "none"; // 会产生滚动条
+  if (isExportIMG) {
+    iframe.style.height = `${bodyHeight - 5}px`; // 导出图片时，减去 5 像素，避免底部出现重复的 iframe 内容（导出时会显示滚动条，但导出后不会显示滚动条）
+  } else {
+    iframe.style.height = `${bodyHeight + 4}px`; // 导出 PDF 时，增加 4 像素，避免导出之后出现滚动条（导出之前可能不显示滚动条，但导出之后会显示滚动条）
   }
+} else {
+  // 设置元素文案
+  filterTypeElement.querySelectorAll(":scope > option").forEach((option: Element) => {
+    const text = i18n[i18nType]["text-" + (option as HTMLOptionElement).value];
+    option.textContent = text;
+  });
+  embedBlocksElement.querySelectorAll(":scope > option").forEach((option: Element) => {
+    const text = i18n[i18nType]["embedBlocks-" + (option as HTMLOptionElement).value];
+    option.textContent = text;
+  });
+  refreshListElement.title = i18n[i18nType]["refreshList"];
 
-  // 更新选中的内联元素类型
-  filterType = filterTypeElement.value;
 
-  setBlockAttrs(widgetBlockId, {
-    "filter-type": filterType
+  // ==================== 事件监听器设置 ====================
+  // 为行级元素类型下拉选择框添加变化事件监听器
+  filterTypeElement.addEventListener("change", function (): void {
+    if (filterTypeInit) {
+      filterTypeInit = false;
+    }
+
+    // 更新选中的内联元素类型
+    filterType = filterTypeElement.value;
+
+    setBlockAttrs(widgetBlockId, {
+      "filter-type": filterType
+    });
+
+    genList();
+  });
+  // 为嵌入块状态下拉选择框添加变化事件监听器
+  embedBlocksElement.addEventListener("change", function (): void {
+    if (embedBlocksInit) {
+      embedBlocksInit = false;
+    }
+
+    // 根据选择的值更新是否包含嵌入块的标志位
+    isEmbedBlocks = embedBlocksElement.value === "true";
+    
+    setBlockAttrs(widgetBlockId, {
+      "embed-blocks": isEmbedBlocks ? "true" : "false"
+    });
+    
+    genList();
+  });
+  // 为刷新按钮添加点击事件监听器
+  refreshListElement.addEventListener("click", function (): void {
+    // 重新生成列表内容
+    genList();
   });
 
+  // 初始化
   genList();
-});
-// 为嵌入块状态下拉选择框添加变化事件监听器
-embedBlocksElement.addEventListener("change", function (): void {
-  if (embedBlocksInit) {
-    embedBlocksInit = false;
-  }
-
-  // 根据选择的值更新是否包含嵌入块的标志位
-  isEmbedBlocks = embedBlocksElement.value === "true";
-  
-  setBlockAttrs(widgetBlockId, {
-    "embed-blocks": isEmbedBlocks ? "true" : "false"
-  });
-  
-  genList();
-});
-// 为刷新按钮添加点击事件监听器
-refreshListElement.addEventListener("click", function (): void {
-  // 重新生成列表内容
-  genList();
-});
-
-// 初始化
-genList();
+}
 
 // ==================== 核心功能函数 ====================
 
@@ -143,6 +191,8 @@ genList();
 async function genList(): Promise<void> {
   // 清空之前的内容列表
   contentListElement!.innerHTML = "";
+  // 复制主题样式
+  await copyThemeStyle();
 
   // 获取文档 ID
   let documentId: string | null = null;
@@ -153,6 +203,7 @@ async function genList(): Promise<void> {
     }
   }
   if (!documentId) {
+    // 在 DOM 中获取不到文档 ID 时，使用 SQL 查询获取
     const documentIdResult = await querySQL(`SELECT root_id FROM blocks WHERE id = '${widgetBlockId}' LIMIT 1`);
     documentId = documentIdResult[0].root_id;
   }
@@ -166,6 +217,10 @@ async function genList(): Promise<void> {
   }, 400);
   
   try {
+    if (!documentId) {
+      throw new Error("Document ID not found");
+    }
+    
     if (isEmbedBlocks) {
       // 包含嵌入块：使用预览接口获取完整的 HTML
       const previewResult = await getBlockPreview(documentId);
@@ -225,7 +280,7 @@ async function genList(): Promise<void> {
     while (element = walker.nextNode() as Element) {
       // 检查是否超过最大处理数量
       if (processedCount >= maxProcessCount) {
-        console.warn(`已达到最大处理数量限制 (${maxProcessCount})，停止处理`);
+        console.warn(`inline-elements widget: Reached the maximum processing limit (${maxProcessCount}), stopping processing`);
         break;
       }
       
@@ -311,7 +366,25 @@ function generateListItems(mergedItems: Array<{text: string, blockId: string}>):
   for (const item of mergedItems) {
     if (isPreviewMode) {
       // 导出预览模式不需要链接，因为点击也无法跳转
-      // 创建列表项并添加文本
+      // 创建纯文本列表项
+      const listItem = document.createElement("li");
+      listItem.textContent = item.text;
+      fragment.appendChild(listItem);
+    } else if (isExportMode) {
+      // 导出PDF时，iframe 块里的链接好像不能转换哈希锚点
+      // // 创建锚点元素
+      // const link = document.createElement("a");
+      // link.textContent = item.text;
+      // link.href = `#${item.blockId}`;
+      
+      // // 创建列表项并添加链接
+      // const listItem = document.createElement("li");
+      // listItem.appendChild(link);
+      
+      // // 将列表项添加到 DocumentFragment
+      // fragment.appendChild(listItem);
+
+      // 创建纯文本列表项
       const listItem = document.createElement("li");
       listItem.textContent = item.text;
       fragment.appendChild(listItem);
@@ -335,6 +408,75 @@ function generateListItems(mergedItems: Array<{text: string, blockId: string}>):
 }
 
 /**
+ * 复制外部的主题样式到挂件块内部
+ */
+async function copyThemeStyle(): Promise<void> {
+  const internalDefaultStyleElement = document.head.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
+  const externalDefaultStyleElement = htmlElement!.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
+  if (externalDefaultStyleElement) {
+    let href = externalDefaultStyleElement.getAttribute("href");
+    if (href) {
+      // <link id="themeDefaultStyle" rel="stylesheet" type="text/css" href="/appearance/themes/daylight/theme.css?v=3.3.4">
+      if (!href.startsWith("/")) href = "/" + href;
+      // 创建新的样式元素
+      const newDefaultStyleElement = document.createElement("link");
+      // 等待新样式表加载完成再移除旧样式表
+      await new Promise<void>((resolve) => {
+        newDefaultStyleElement.rel = "stylesheet";
+        newDefaultStyleElement.type = "text/css";
+        newDefaultStyleElement.href = isExportPDF ? href! : "../.." + href!; // 导出 PDF 时，获取到的 href 就是完整路径的
+        newDefaultStyleElement.onload = () => resolve();
+        newDefaultStyleElement.onerror = () => resolve(); // 即使加载失败也要继续，避免阻塞
+        
+        // 插入新样式元素
+        if (internalDefaultStyleElement) {
+          internalDefaultStyleElement.parentNode?.insertBefore(newDefaultStyleElement, internalDefaultStyleElement);
+        } else {
+          document.head.appendChild(newDefaultStyleElement);
+        }
+      });
+      
+      // 移除旧样式元素
+      internalDefaultStyleElement?.remove();
+      // 设置新样式元素的 ID
+      newDefaultStyleElement.id = "themeDefaultStyle";
+    }
+  }
+  
+  const internalStyleElement = document.head.querySelector("#themeStyle") as HTMLLinkElement | null;
+  const externalStyleElement = htmlElement!.querySelector("#themeStyle") as HTMLLinkElement | null;
+  if (externalStyleElement) {
+    let href = externalStyleElement.getAttribute("href");
+    if (href) {
+      // <link id="themeStyle" rel="stylesheet" type="text/css" href="/appearance/themes/Whisper/theme.css?v=1.6.0">
+      if (!href.startsWith("/")) href = "/" + href;
+      // 创建新的样式元素
+      const newStyleElement = document.createElement("link");
+      // 等待新样式表加载完成再移除旧样式表
+      await new Promise<void>((resolve) => {
+        newStyleElement.rel = "stylesheet";
+        newStyleElement.type = "text/css";
+        newStyleElement.href = isExportPDF ? href! : "../.." + href!;
+        newStyleElement.onload = () => resolve();
+        newStyleElement.onerror = () => resolve(); // 即使加载失败也要继续，避免阻塞
+        
+        // 插入新样式元素
+        if (internalStyleElement) {
+          internalStyleElement.parentNode?.insertBefore(newStyleElement, internalStyleElement);
+        } else {
+          document.head.appendChild(newStyleElement);
+        }
+      });
+      
+      // 移除旧样式元素
+      internalStyleElement?.remove();
+      // 设置新样式元素的 ID
+      newStyleElement.id = "themeStyle";
+    }
+  }
+}
+
+/**
  * 设置块属性（用于保存挂件块配置）
  */
 async function setBlockAttrs(blockId: string | null, attrs: Record<string, string>) {
@@ -343,7 +485,7 @@ async function setBlockAttrs(blockId: string | null, attrs: Record<string, strin
     return;
   }
   if (!blockId) {
-    console.error('Failed to setBlockAttrs: blockId is null');
+    console.warn('inline-elements widget: Failed to setBlockAttrs, blockId is null');
     return;
   }
 
@@ -372,7 +514,7 @@ async function setBlockAttrs(blockId: string | null, attrs: Record<string, strin
       const result = await response.json();
       return result;
   } catch (error) {
-      console.error('Failed to setBlockAttrs:', error);
+      console.warn('inline-elements widget: Failed to setBlockAttrs, error:', error);
       throw error;
   }
 }
@@ -402,7 +544,7 @@ async function querySQL(sql: string) {
           throw new Error(result.msg);
       }
   } catch (error) {
-      console.error("Failed to querySQL:", error);
+      console.warn("inline-elements widget: Failed to querySQL, error:", error);
       throw error;
   }
 }
@@ -426,7 +568,7 @@ async function getBlockDOM(blockId: string) {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Failed to getBlockDOM:", error);
+    console.warn("inline-elements widget: Failed to getBlockDOM, error:", error);
     throw error;
   }
 }
@@ -450,7 +592,7 @@ async function getBlockPreview(blockId: string) {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Failed to getBlockPreview:", error);
+    console.warn("inline-elements widget: Failed to getBlockPreview, error:", error);
     throw error;
   }
 }

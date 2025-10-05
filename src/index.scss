@@ -1,96 +1,108 @@
 /* ==================== 小部件控制面板样式 ==================== */
 #controlPanel {
-  position: fixed;           /* 固定定位，始终显示在页面左上角 */
-  inset-inline-start: 10px;  /* 距离左侧 10px */
-  inset-block-start: 10px;   /* 距离顶部 10px */
-  display: flex;             /* 使用 flex 布局 */
-  align-items: center;       /* 垂直居中对齐 */
-  gap: 8px;                  /* 子元素间距 8px */
+  position: fixed;           // 固定定位，始终显示在页面左上角
+  inset-inline-start: 10px;  // 距离左侧 10px
+  inset-block-start: 10px;   // 距离顶部 10px
+  display: flex;             // 使用 flex 布局
+  align-items: center;       // 垂直居中对齐
+  gap: 8px;                  // 子元素间距 8px
 }
 
-/* ==================== 下拉选择框样式 ==================== */
+/* ==================== 下拉选择框样式 ======================= */
 select {
-  width: auto;               /* 自适应宽度 */
-  min-width: 75px;           /* 最小宽度（JS 设置文案之前的下拉框宽度很小，用于视觉防抖） */
-  height: 30px;              /* 选择框高度 */
-  padding-inline: 6px;       /* 内边距 */
-  border: 1px solid #ddd;  /* 边框样式 */
-  border-radius: 4px;        /* 圆角 */
-  background-color: #fff;  /* 背景色 */
-  font-size: 13px;           /* 字体大小 */
-  color: #333;             /* 文字颜色 */
-  outline: none;             /* 移除默认轮廓 */
-  cursor: pointer;           /* 鼠标悬停时显示手型光标 */
+  // 参考了原生的 b3-select 样式
+  width: auto;     // 自适应宽度
+  min-width: 75px; // 最小宽度（JS 设置文案之前的下拉框宽度很小，用于视觉防抖）
+  height: 30px;
+  outline: none;
+  border: 1px solid var(--b3-theme-on-surface);
+  border-radius: var(--b3-border-radius);
+  padding: 4px 26px 4px 8px;
+  line-height: 20px;
+  color: var(--b3-theme-on-background);
+  background: var(--b3-select-background);
+  background-color: transparent;
+  transition: border 120ms 0ms cubic-bezier(0, 0, 0.2, 1),background-color .2s cubic-bezier(0, 0, 0.2, 1) 0ms;
+  font-size: 14px;
+  appearance: none;
+  overflow: hidden !important;
+  cursor: pointer;
 
-  &:hover {
-    border-color: #999;    /* 悬停时边框颜色变深 */
-  }
-
+  &:hover,
   &:focus {
-    border-color: #666;    /* 聚焦时边框颜色变深 */
+    border-color: var(--b3-theme-on-background); // 悬停或聚焦时边框颜色变深
+    background-color: var(--b3-theme-surface);
   }
 }
 
-/* ==================== 刷新按钮样式 ==================== */
+/* ==================== 刷新按钮样式 ========================= */
 #refreshList {
-  width: 30px;               /* 按钮宽度 */
-  height: 30px;              /* 按钮高度 */
-  border: 1px solid #ddd;  /* 边框样式 */
-  border-radius: 4px;        /* 圆角 */
-  background-color: #fff;  /* 背景色 */
-  color: #333;             /* 文字颜色 */
-  outline: none;             /* 移除默认轮廓 */
-  cursor: pointer;           /* 鼠标悬停时显示手型光标 */
-  display: flex;             /* 使用 flex 布局 */
-  align-items: center;       /* 垂直居中对齐 */
-  justify-content: center;   /* 水平居中对齐 */
-  transition: all 0.2s ease; /* 过渡动画 */
+  width: 30px;
+  height: 30px;
+  outline: none;
+  border: 1px solid var(--b3-theme-on-surface);
+  border-radius: var(--b3-border-radius);
+  color: var(--b3-theme-on-background);
+  background-color: transparent;
+  display: flex;
+  align-items: center;       // 垂直居中对齐
+  justify-content: center;   // 水平居中对齐
+  transition: all 0.2s ease; // 过渡动画
+  cursor: pointer;
 
   svg {
-    width: 16px;             /* SVG 图标宽度 */
-    height: 16px;            /* SVG 图标高度 */
-    fill: currentColor;      /* 使用当前文字颜色填充 */
+    width: 16px;
+    height: 16px;
+    fill: currentColor;      // 使用当前文字颜色填充
   }
 
   &:hover {
-    border-color: #999;        /* 悬停时边框颜色变深 */
-    background-color: #f5f5f5; /* 悬停时背景色变浅 */
+    // 悬停时颜色变深
+    border-color: var(--b3-theme-on-background);
+    background-color: var(--b3-theme-surface);
   }
 
   &:active {
-    background-color: #e5e5e5; /* 点击时背景色变深 */
-    transform: scale(0.95);      /* 点击时轻微缩小 */
+    transform: scale(0.95);  // 点击时按钮轻微缩小
   }
 }
 
-/* ==================== 内容列表样式 ==================== */
+/* ==================== 内容列表样式 ========================== */
 #contentList {
-  padding-top: 32px;             /* 顶部留白，避免与控制面板重叠 */
-  padding-inline-start: 24px;    /* 内联起始边距 */
+  padding-top: 32px;          // 顶部留白，避免与控制面板重叠
+  padding-inline-start: 24px; // 内联起始边距
 
   li {
-    padding: 5px;                /* 内边距 */
-    background-color: #f2f2f2; /* 浅灰色背景 */
-    border-radius: 5px;          /* 圆角 */
-    margin-bottom: 5px;          /* 底部间距 */
-    color: black;              /* 文字颜色 */
+    padding: 4px;
+    color: var(--b3-theme-on-background);   // 文字颜色
+    overflow-wrap: break-word;              // 长单词换行
 
     a {
-      color: black;            /* 链接文字颜色 */
-      text-decoration: none;     /* 移除下划线 */
+      color: var(--b3-theme-on-background); // 链接文字颜色
+      text-decoration: none;                // 移除下划线
     }
   }
 }
 
-/* ==================== 消息样式 ==================== */
+/* ==================== 消息样式 ============================= */
 #message {
   padding: 10px;
   text-align: center;
-  color: #666;
+  color: var(--b3-theme-on-surface-light);
 }
 #errorMessage {
   justify-self: center;
   font-size: 1.25em;
   font-weight: bold;
-  color: red;
+  color: var(--b3-theme-error);
+}
+
+/* ==================== 导出图片/PDF模式样式 =================== */
+.exportMode {
+  #controlPanel {
+    display: none;
+  }
+  #contentList {
+    padding-top: 0;
+  }
 }
