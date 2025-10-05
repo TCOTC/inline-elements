@@ -78,19 +78,6 @@ if (!widgetBlock || !isWidgetBlockId || !htmlElement || !filterTypeElement || !e
   return;
 }
 
-// 复制属性，因为主题的样式选择器依赖这些属性
-// 把 htmlElement 上的所有属性复制到 document.documentElement 上
-for (const attr of htmlElement.attributes) {
-  document.documentElement.setAttribute(attr.name, attr.value);
-}
-// 把 bodyElement 上的所有属性复制到 document.body 上
-const bodyElement = htmlElement.querySelector("body");
-if (bodyElement) {
-for (const attr of bodyElement.attributes) {
-    document.body.setAttribute(attr.name, attr.value);
-  }
-}
-
 let isExportMode = false; // 是否是导出图片/PDF模式
 let isExportIMG = !!widgetBlock?.closest(".export-img"); // 是否是导出图片模式
 let isExportPDF = !!widgetBlock?.closest("#preview"); // 是否是导出 PDF 模式
@@ -570,6 +557,46 @@ function generateListItems(mergedItems: Array<{text: string, blockId: string}>):
  * 复制外部的主题样式到挂件块内部
  */
 async function copyThemeStyle(): Promise<void> {
+  // 复制属性，因为主题的样式选择器依赖这些属性
+  // 获取所有属性
+  const documentElementAttributes = [];
+  for (const attr of document.documentElement.attributes) {
+    documentElementAttributes.push(attr.name);
+  }
+  // 把 htmlElement 上的所有属性复制到 document.documentElement 上
+  const htmlElementAttributes = [];
+  for (const attr of htmlElement!.attributes) {
+    document.documentElement.setAttribute(attr.name, attr.value);
+    htmlElementAttributes.push(attr.name);
+  }
+  // 移除多余的属性
+  for (const attr of documentElementAttributes) {
+    if (!htmlElementAttributes.includes(attr)) {
+      document.documentElement.removeAttribute(attr);
+    }
+  }
+
+  // 获取所有属性
+  const internalBodyElementAttributes = [];
+  for (const attr of document.body.attributes) {
+    internalBodyElementAttributes.push(attr.name);
+  }
+  // 把 bodyElement 上的所有属性复制到 document.body 上
+  const bodyElement = htmlElement!.querySelector("body");
+  const externalBodyElementAttributes = [];
+  if (bodyElement) {
+  for (const attr of bodyElement.attributes) {
+      document.body.setAttribute(attr.name, attr.value);
+      externalBodyElementAttributes.push(attr.name);
+    }
+  }
+  // 移除多余的属性
+  for (const attr of internalBodyElementAttributes) {
+    if (!externalBodyElementAttributes.includes(attr)) {
+      document.body.removeAttribute(attr);
+    }
+  }
+
   const internalDefaultStyleElement = document.head.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
   const externalDefaultStyleElement = htmlElement!.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
   if (externalDefaultStyleElement) {
@@ -600,6 +627,9 @@ async function copyThemeStyle(): Promise<void> {
       // 设置新样式元素的 ID
       newDefaultStyleElement.id = "themeDefaultStyle";
     }
+  } else if (internalDefaultStyleElement) {
+    // 如果没有默认主题样式，挂件块内也要保持一致
+    internalDefaultStyleElement.href = "";
   }
   
   const internalStyleElement = document.head.querySelector("#themeStyle") as HTMLLinkElement | null;
@@ -632,6 +662,21 @@ async function copyThemeStyle(): Promise<void> {
       // 设置新样式元素的 ID
       newStyleElement.id = "themeStyle";
     }
+  } else if (internalStyleElement) {
+    // 如果没有第三方主题样式，挂件块内也要保持一致
+    internalStyleElement.href = "";
+  }
+
+  // siyuanStyle 中包含了 --b3-font-size-editor 变量，需要复制到挂件块内
+  const internalSiyuanStyleElement = document.head.querySelector("#siyuanStyle") as HTMLLinkElement | null;
+  const externalSiyuanStyleElement = htmlElement!.querySelector("#siyuanStyle") as HTMLLinkElement | null;
+  if (internalSiyuanStyleElement && externalSiyuanStyleElement) {
+    let textContent = externalSiyuanStyleElement.textContent;
+    if (textContent) {
+      internalSiyuanStyleElement.textContent = textContent;
+    }
+  } else if (internalSiyuanStyleElement) {
+    internalSiyuanStyleElement.textContent = "";
   }
 }
 
