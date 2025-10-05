@@ -19,21 +19,22 @@ const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-"; // 挂件属性前�
 
 // 当前选中的内联元素类型，默认为 "mark"（标记）
 let filterType: string = "mark";
-const allFilterTypes: Set<string> = new Set(["mark", "strong", "tag", "em", "u", "code", "inline-math", "inline-memo"]);
+const filterTypesList: string[] = ["mark", "strong", "tag", "em", "u", "s", "inline-memo", "a", "block-ref", "code", "inline-math", "sup", "sub"];
 // TODO: 通过 JS 生成 option 元素；按实际使用情况排一下序
-// textmark a	链接
-// textmark block-ref	引用
-// textmark code	行内代码
-// textmark inline-memo	备注
-// textmark tag	#标签#
-// textmark inline-math	行内公式
-// textmark mark	高亮标记
-// textmark em	HTML tag
-// textmark s	HTML tag
-// textmark strong	HTML tag
-// textmark sub	HTML tag
-// textmark sup	HTML tag
-// textmark u	HTML tag
+// mark        标记
+// strong      粗体
+// tag         标签
+// em	         斜体
+// u           下划线
+// s           删除线
+// inline-memo 备注
+// a           超链接
+// block-ref   块引用
+// code	       行级代码
+// inline-math 行级公式
+// sup         上标
+// sub         下标
+const embedBlocksList: string[] = ["false", "true"];
 
 // 控制是否包含嵌入块内容的标志位，默认为 false（不包含）
 let isEmbedBlocks: boolean = false;
@@ -86,10 +87,9 @@ await copyThemeStyle();
 let filterTypeInit = false;
 let embedBlocksInit = false;
 const filterTypeAttr = widgetBlock.getAttribute(`${WIDGET_ATTR_PREFIX}filter-type`);
-if (filterTypeAttr && allFilterTypes.has(filterTypeAttr)) {
+if (filterTypeAttr && filterTypesList.includes(filterTypeAttr)) {
   // 验证 filterTypeAttr 是否在 filterTypeList 中，避免 SQL 注入
   filterType = filterTypeAttr;
-  filterTypeElement.value = filterTypeAttr;
 } else {
   filterTypeInit = true;
   setTimeout(() => {
@@ -103,7 +103,6 @@ if (filterTypeAttr && allFilterTypes.has(filterTypeAttr)) {
 const embedBlocksAttr = widgetBlock.getAttribute(`${WIDGET_ATTR_PREFIX}embed-blocks`);
 if (embedBlocksAttr) {
   isEmbedBlocks = embedBlocksAttr === "true";
-  embedBlocksElement.value = embedBlocksAttr;
 } else {
   embedBlocksInit = true;
   setTimeout(() => {
@@ -118,7 +117,7 @@ if (embedBlocksAttr) {
 if (isExportMode) {
   // 设置导出模式样式
   document.body.classList.add("exportMode");
-  // 初始化
+  // 先初始化才能获取到正确的元素高度
   await genList();
   // 获取 html 元素包含外边距的实际高度，并适当增加高度以避免出现滚动条
   const bodyHeight = document.documentElement.getBoundingClientRect().height;
@@ -130,15 +129,25 @@ if (isExportMode) {
     iframe.style.height = `${bodyHeight + 4}px`; // 导出 PDF 时，增加 4 像素，避免导出之后出现滚动条（导出之前可能不显示滚动条，但导出之后会显示滚动条）
   }
 } else {
-  // 设置元素文案
-  filterTypeElement.querySelectorAll(":scope > option").forEach((option: Element) => {
-    const text = i18n[i18nType]["text-" + (option as HTMLOptionElement).value];
-    option.textContent = text;
+  // 设置下拉框选项和元素文案
+  const filterTypeOptions = filterTypesList.map((type: string) => {
+    const option = document.createElement("option");
+    option.value = type;
+    option.textContent = i18n[i18nType]["text-" + type];
+    return option;
   });
-  embedBlocksElement.querySelectorAll(":scope > option").forEach((option: Element) => {
-    const text = i18n[i18nType]["embedBlocks-" + (option as HTMLOptionElement).value];
-    option.textContent = text;
+  filterTypeElement.append(...filterTypeOptions);
+  filterTypeElement.value = filterType;
+
+  const embedBlocksOptions = embedBlocksList.map((value: string) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = i18n[i18nType]["embedBlocks-" + value];
+    return option;
   });
+  embedBlocksElement.append(...embedBlocksOptions);
+  embedBlocksElement.value = isEmbedBlocks ? "true" : "false";
+  
   refreshListElement.title = i18n[i18nType]["refreshList"];
 
 
