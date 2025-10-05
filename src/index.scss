@@ -1,3 +1,7 @@
+body {
+  margin: 8px;
+}
+
 /* ==================== 小部件控制面板样式 ==================== */
 #controlPanel {
   position: fixed;           // 固定定位，始终显示在页面左上角
@@ -6,6 +10,21 @@
   display: flex;             // 使用 flex 布局
   align-items: center;       // 垂直居中对齐
   gap: 8px;                  // 子元素间距 8px
+  max-width: calc(100vw - 20px); // 最大宽度为视口宽度减去左右边距
+  overflow-x: auto;          // 横向滚动
+  overflow-y: hidden;        // 隐藏纵向滚动条
+  white-space: nowrap;       // 防止子元素换行
+  padding: 4px 0;            // 上下内边距，为滚动条留出空间
+  scrollbar-width: thin;     // 细滚动条（Firefox）
+  // scrollbar-gutter: stable; // 不知道为什么无效
+  
+  // 将整个容器垂直翻转，这样滚动条就会在上方
+  transform: scaleY(-1);
+
+  // 将所有子元素再次翻转回来，保持正常显示
+  > * {
+    transform: scaleY(-1);
+  }
 }
 
 /* ==================== 下拉选择框样式 ======================= */
@@ -14,6 +33,7 @@ select {
   width: auto;     // 自适应宽度
   min-width: 75px; // 最小宽度（JS 设置文案之前的下拉框宽度很小，用于视觉防抖）
   height: 30px;
+  flex-shrink: 0;  // 防止在 flex 容器中收缩
   outline: none;
   border: 1px solid var(--b3-theme-on-surface);
   border-radius: var(--b3-border-radius);
@@ -49,6 +69,7 @@ select {
   justify-content: center;   // 水平居中对齐
   transition: all 0.2s ease; // 过渡动画
   cursor: pointer;
+  flex-shrink: 0;            // 防止在 flex 容器中收缩
 
   svg {
     width: 16px;
@@ -63,7 +84,7 @@ select {
   }
 
   &:active {
-    transform: scale(0.95);  // 点击时按钮轻微缩小
+    transform: scaleY(-1) scale(0.95);  // 点击时仅缩小，保持翻转校正
   }
 }
 
