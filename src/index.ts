@@ -5,9 +5,12 @@ To-dos:
 - [x] 支持在导出图片/PDF时使用：隐藏 iframe 边框、隐藏控制面板
 - [x] 测试在发布服务是否正常工作、不报错
 - [x] 暗黑模式的样式，需要从 iframe 外获取颜色变量实际值，genList 的时候也要刷新一次
-- [ ] 支持所有行级元素
+- [ ] 支持所有行级元素：两个接口获取到的行级元素格式不同，需要单独适配
 - [ ] 移除所有 console.log / error
+- [ ] 测试在移动端能否正常使用
 - [ ] 把主空间里使用到 widget-inline-extractor 挂件的地方，改为使用本挂件
+- [ ] 支持汇总带 颜色/背景色 的元素：需要多加一个下拉框，很多颜色
+- [ ] 在其他浏览器测试以上功能是否正常工作
 */
 
 import { i18n } from "./i18n";
@@ -17,25 +20,26 @@ async function main(): Promise<void> {
 // ==================== 全局变量定义 ====================
 const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-"; // 挂件属性前缀
 
-// 当前选中的内联元素类型，默认为 "mark"（标记）
-let filterType: string = "mark";
-const filterTypesList: string[] = ["mark", "strong", "tag", "em", "u", "s", "inline-memo", "a", "block-ref", "code", "inline-math", "sup", "sub"];
-// TODO: 通过 JS 生成 option 元素；按实际使用情况排一下序
-// mark        标记
-// strong      粗体
-// tag         标签
-// em	         斜体
-// u           下划线
-// s           删除线
-// inline-memo 备注
-// a           超链接
-// block-ref   块引用
-// code	       行级代码
-// inline-math 行级公式
-// sup         上标
-// sub         下标
+const filterTypesList: string[] = ["mark", "strong", "tag", "em", "u", "s", "inline-memo", "a", "block-ref", "code", "inline-math", "sup", "sub", "kbd"];
+// 通过 JS 生成 option 元素；按实际使用情况排一下序；两个接口获取到的行级元素格式不同
+// mark        标记　　   <span data-type="mark">text</span>
+// strong      粗体　　   <span data-type="strong">text</span>
+// tag         标签　　   <span data-type="tag">&ZeroWidthSpace;text</span>                                           |  [x]  <em>#text#</em>
+// em	         斜体　　   <span data-type="em">text</span>
+// u           下划线　   <span data-type="u">text</span>
+// s           删除线　   <span data-type="s">text</span>
+// inline-memo 备注　　   <span data-type="inline-memo" data-inline-memo-content="memo">text</span>                   |  [x]  导出预览接口没有行级备注元素
+// a           超链接　   <span data-type="a" data-href="link">text</span>                                            |  [ ]  <a href="link" data-type="a">text</a>（块超链接跟块引用的一样），v3.3.5 之后是 <a href="link" data-type="a">text</a>
+// block-ref   块引用　   <span data-type="block-ref" data-id="20250924233731-pl5p9zc" data-subtype="s">text</span>   |  [ ]  <a href="siyuan://blocks/20250924233731-pl5p9zc">text</a> // TODO: 这里在等 https://github.com/siyuan-note/siyuan/issues/16017 修改
+// code	       行级代码   <span data-type="code">&ZeroWidthSpace;text</span>                                          |  <span data-type="code">text</span>
+// inline-math 行级公式   <span data-type="inline-math">
+// sup         上标　　   <span data-type="sup">text</span>
+// sub         下标　　   <span data-type="sub">text</span>
+// kbd         键盘　　   <span data-type="kbd">&ZeroWidthSpace;text</span>                                           |  <span data-type="kbd">text</span>
 const embedBlocksList: string[] = ["false", "true"];
 
+// 当前选中的内联元素类型，默认为 "mark"（标记）
+let filterType: string = filterTypesList[0];
 // 控制是否包含嵌入块内容的标志位，默认为 false（不包含）
 let isEmbedBlocks: boolean = false;
 
@@ -72,6 +76,19 @@ if (!widgetBlock || !isWidgetBlockId || !htmlElement || !filterTypeElement || !e
   document.body.innerHTML = `<div id="errorMessage">${i18n[i18nType].errorMessage}</div>`;
   console.error("inline-elements widget: Necessary widget elements not retrieved:", {widgetBlock, isWidgetBlockId, htmlElement, filterTypeElement, embedBlocksElement, refreshListElement, contentListElement});
   return;
+}
+
+// 复制属性，因为主题的样式选择器依赖这些属性
+// 把 htmlElement 上的所有属性复制到 document.documentElement 上
+for (const attr of htmlElement.attributes) {
+  document.documentElement.setAttribute(attr.name, attr.value);
+}
+// 把 bodyElement 上的所有属性复制到 document.body 上
+const bodyElement = htmlElement.querySelector("body");
+if (bodyElement) {
+for (const attr of bodyElement.attributes) {
+    document.body.setAttribute(attr.name, attr.value);
+  }
 }
 
 let isExportMode = false; // 是否是导出图片/PDF模式
@@ -121,6 +138,7 @@ if (isExportMode) {
   await genList();
   // 获取 html 元素包含外边距的实际高度，并适当增加高度以避免出现滚动条
   const bodyHeight = document.documentElement.getBoundingClientRect().height;
+  document.documentElement.style.overflow = "hidden"; // 设置 html 元素不显示滚动条，替代已弃用的 iframe.setAttribute("scrolling", "no")
   const iframe = widgetBlock.querySelector("iframe") as HTMLIFrameElement;
   iframe.style.border = "none"; // 会产生滚动条
   if (isExportIMG) {
@@ -150,6 +168,14 @@ if (isExportMode) {
   
   refreshListElement.title = i18n[i18nType]["refreshList"];
 
+  if (filterType === 'inline-memo' && isEmbedBlocks) {
+    // 导出预览接口没有行级备注元素，所以必须是不包含嵌入块
+    isEmbedBlocks = false;
+    embedBlocksElement.value = "false";
+    setBlockAttrs(widgetBlockId, {
+      "embed-blocks": isEmbedBlocks ? "true" : "false"
+    });
+  }
 
   // ==================== 事件监听器设置 ====================
   // 为行级元素类型下拉选择框添加变化事件监听器
@@ -165,6 +191,14 @@ if (isExportMode) {
       "filter-type": filterType
     });
 
+    if (filterType === 'inline-memo') {
+      isEmbedBlocks = false;
+      embedBlocksElement.value = "false";
+      setBlockAttrs(widgetBlockId, {
+        "embed-blocks": isEmbedBlocks ? "true" : "false"
+      });
+    }
+
     genList();
   });
   // 为嵌入块状态下拉选择框添加变化事件监听器
@@ -173,13 +207,18 @@ if (isExportMode) {
       embedBlocksInit = false;
     }
 
-    // 根据选择的值更新是否包含嵌入块的标志位
-    isEmbedBlocks = embedBlocksElement.value === "true";
-    
-    setBlockAttrs(widgetBlockId, {
-      "embed-blocks": isEmbedBlocks ? "true" : "false"
-    });
-    
+    if (filterType === 'inline-memo') {
+      isEmbedBlocks = false;
+      embedBlocksElement.value = "false";
+    } else {
+      // 根据选择的值更新是否包含嵌入块的标志位
+      isEmbedBlocks = embedBlocksElement.value === "true";
+      
+      setBlockAttrs(widgetBlockId, {
+        "embed-blocks": isEmbedBlocks ? "true" : "false"
+      });
+    }
+
     genList();
   });
   // 为刷新按钮添加点击事件监听器
@@ -265,20 +304,119 @@ async function genList(): Promise<void> {
   let processedCount = 0;
   const maxProcessCount = 10000; // 限制最大处理元素数量
   
-  // 创建 TreeWalker 来遍历所有 span 元素
-  const walker = doc.createTreeWalker(
-    doc.body,
-    NodeFilter.SHOW_ELEMENT,
-    {
-      acceptNode: function(node: Node) {
-        // 检查是否是目标类型的 span 元素
-        if (node instanceof Element && node.tagName === 'SPAN' && node.getAttribute('data-type')?.includes(filterType)) {
-          return NodeFilter.FILTER_ACCEPT;
+  // 根据 isEmbedBlocks 和 filterType 创建不同的 TreeWalker
+  let walker: TreeWalker;
+
+  const defaultWalker = () => {
+    // 标准处理：只处理 span 元素
+    walker = doc.createTreeWalker(
+      doc.body,
+      NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode: function(node: Node) {
+          // 使用 SHOW_ELEMENT 时，node 一定是 Element 类型，直接访问属性
+          if ((node as Element).tagName === 'SPAN' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          return NodeFilter.FILTER_SKIP;
         }
-        return NodeFilter.FILTER_SKIP;
       }
+    );
+  }
+  
+  if (isEmbedBlocks) {
+    // 嵌入块模式的兼容处理
+    switch (filterType) {
+      case 'tag':
+        // 标签元素结构：<em>#text#</em>
+        walker = doc.createTreeWalker(
+          doc.body,
+          NodeFilter.SHOW_ELEMENT,
+          {
+            acceptNode: function(node: Node) {
+              // 使用 SHOW_ELEMENT 时，node 一定是 Element 类型，直接访问属性
+              if ((node as Element).tagName === 'EM') {
+                const text = trimText((node as Element).textContent);
+                // 检查是否以 # 开头和结尾，且包含标签内容
+                if (text && text.startsWith('#') && text.endsWith('#') && text.length > 2) {
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+              }
+              return NodeFilter.FILTER_SKIP;
+            }
+          }
+        );
+        break;
+      case 'a':
+        if (isLargerThanVersion("3.3.5") >= 0) {
+          // v3.3.5 及之后版本的超链接元素结构：<a href="link" data-type="a">text</a>
+          walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_ELEMENT,
+            {
+              acceptNode: function(node: Node) {
+                if ((node as Element).tagName === 'A' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_SKIP;
+              }
+            }
+          );
+        } else {
+          // v3.3.5 之前版本的超链接元素结构：<a href="link">text</a>
+          walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_ELEMENT,
+            {
+              acceptNode: function(node: Node) {
+                if ((node as Element).tagName === 'A' && !(node as HTMLAnchorElement).href.startsWith('siyuan://')) {
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_SKIP;
+              }
+            }
+          );
+        }
+        break;
+      case 'block-ref':
+        if (isLargerThanVersion("3.3.5") >= 0) {
+          // TODO: 这里还在等实现 https://github.com/siyuan-note/siyuan/issues/16017
+          // v3.3.5 及之后版本的块引用元素结构：<a href="link" data-type="block-ref">text</a>
+          walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_ELEMENT,
+            {
+              acceptNode: function(node: Node) {
+                if ((node as Element).tagName === 'A' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_SKIP;
+              }
+            }
+          );
+        } else {
+          // v3.3.5 之前版本的块引用元素跟超链接元素的结构是一样的，以 siyuan:// 开头：<a href="siyuan://xxxxx">text</a>
+          walker = doc.createTreeWalker(
+            doc.body,
+            NodeFilter.SHOW_ELEMENT,
+            {
+              acceptNode: function(node: Node) {
+                if ((node as Element).tagName === 'A' && (node as HTMLAnchorElement).href.startsWith('siyuan://')) {
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_SKIP;
+              }
+            }
+          );
+        }
+        break;
+      default:
+        defaultWalker();
+        break;
     }
-  );
+  } else {
+    defaultWalker();
+  }
   
   // 使用异步处理避免界面卡死
   const processElements = async () => {
@@ -293,7 +431,14 @@ async function genList(): Promise<void> {
         break;
       }
       
-      const text = element.textContent?.trim();
+      let text = trimText(element.textContent);
+      // 根据处理模式进行不同的文本处理
+      if (isEmbedBlocks && filterType === 'tag') {
+        // 嵌入块模式下的标签处理：去掉首尾的 #
+        if (text.startsWith('#') && text.endsWith('#')) {
+          text = trimText(text.slice(1, -1)); // 去掉首尾的 #
+        }
+      }
       if (!text) continue;
       
       // 查找包含当前内联元素的块元素（通过 data-node-id 属性）
@@ -361,12 +506,17 @@ function generateListItems(mergedItems: Array<{text: string, blockId: string}>):
   
   // 检查是否有查询结果
   if (mergedItems.length === 0) {
-    // 没有查询结果时显示提示消息
-    const noResultsDiv = document.createElement("div");
-    noResultsDiv.id = "message";
-    noResultsDiv.textContent = i18n[i18nType]["noResultsMessage"];
-    contentListElement!.appendChild(noResultsDiv);
-    return;
+    if (isExportMode) {
+      // 在导出模式没有查询结果时隐藏挂件块
+      (widgetBlock! as HTMLElement).style.display = "none";
+    } else {
+      // 其他情况下没有查询结果时显示提示消息
+      const noResultsDiv = document.createElement("div");
+      noResultsDiv.id = "message";
+      noResultsDiv.textContent = i18n[i18nType]["noResultsMessage"];
+      contentListElement!.appendChild(noResultsDiv);
+      return;
+    }
   }
   
   // 使用 DocumentFragment 提升性能
@@ -604,6 +754,46 @@ async function getBlockPreview(blockId: string) {
     console.warn("inline-elements widget: Failed to getBlockPreview, error:", error);
     throw error;
   }
+}
+
+/**
+ * 移除文本首尾的空白字符（包括零宽字符和普通空白字符）
+ * @param text 原始文本
+ * @returns 处理后的文本
+ */
+function trimText(text: string | null | undefined): string {
+  if (!text) return '';
+  // 直接移除首尾的所有空白字符（包括零宽字符）
+  return text.replace(/^[\s\u200B-\u200D\uFEFF\u2060]+|[\s\u200B-\u200D\uFEFF\u2060]+$/g, '');
+}
+
+/**
+ * 比较版本号（语义化版本）
+ * @param version 要比较的目标版本号
+ * @returns 比较结果（1：当前版本大于目标版本，-1：当前版本小于目标版本，0：相等）
+ */
+function isLargerThanVersion(version: string): number {
+  // 获取当前内核版本（基准对象）
+  const currentVersion = window.parent.siyuan.config?.system?.kernelVersion;
+  if (!currentVersion) return 0; // 无法获取时视为相等
+
+  // 分割版本号（注意变量名语义）
+  const baseParts = currentVersion.split('.').map(Number); // 基准版本（当前版本）
+  const targetParts = version.split('.').map(Number);      // 目标版本（传入参数）
+
+  const maxLength = Math.max(baseParts.length, targetParts.length);
+  
+  for (let i = 0; i < maxLength; i++) {
+    // 缺失的版本段视为0（如 1.0 == 1.0.0）
+    const baseSegment = i < baseParts.length ? baseParts[i] : 0;
+    const targetSegment = i < targetParts.length ? targetParts[i] : 0;
+    
+    // 核心逻辑：以当前版本为基准进行比较
+    if (baseSegment > targetSegment) return 1;  // 当前版本 > 目标版本
+    if (baseSegment < targetSegment) return -1; // 当前版本 < 目标版本
+  }
+  
+  return 0; // 所有分段均相等
 }
 }
 

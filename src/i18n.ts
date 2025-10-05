@@ -12,6 +12,7 @@ export const i18n: Record<string, Record<string, string>> = {
   // inline-math 行级公式
   // sup         上标
   // sub         下标
+  // kbd         键盘
   "zh_CN": {
     "text-mark": "标记",
     "text-strong": "粗体",
@@ -26,6 +27,7 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-inline-math": "行级公式",
     "text-sup": "上标",
     "text-sub": "下标",
+    "text-kbd": "键盘",
     "embedBlocks-true": "包含嵌入块中的元素",
     "embedBlocks-false": "排除嵌入块中的元素",
     "refreshList": "刷新列表",
@@ -47,6 +49,7 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-inline-math": "行級公式",
     "text-sup": "上標",
     "text-sub": "下標",
+    "text-kbd": "鍵盤",
     "embedBlocks-true": "包含嵌入塊中的元素",
     "embedBlocks-false": "排除嵌入塊中的元素",
     "refreshList": "刷新列表",
@@ -68,6 +71,7 @@ export const i18n: Record<string, Record<string, string>> = {
     "text-inline-math": "Inline Math",
     "text-sup": "Superscript",
     "text-sub": "Subscript",
+    "text-kbd": "Keyboard",
     "embedBlocks-true": "Include Embed Blocks Elements",
     "embedBlocks-false": "Exclude Embed Blocks Elements",
     "refreshList": "Refresh List",
