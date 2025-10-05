@@ -596,6 +596,9 @@ async function copyThemeStyle(): Promise<void> {
       document.body.removeAttribute(attr);
     }
   }
+  if (isExportMode) {
+    document.body.classList.add("exportMode");
+  }
 
   const internalDefaultStyleElement = document.head.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
   const externalDefaultStyleElement = htmlElement!.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
