@@ -304,7 +304,7 @@ async function genList(): Promise<void> {
           // 使用 SHOW_ELEMENT 时，node 一定是 Element 类型，直接访问属性
           if ((node as Element).tagName === 'SPAN') {
             const dataType = (node as Element).getAttribute('data-type');
-            if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+            if (dataType && dataType.split(' ').includes(filterType)) {
               return NodeFilter.FILTER_ACCEPT;
             }
           }
@@ -347,7 +347,7 @@ async function genList(): Promise<void> {
               acceptNode: function(node: Node) {
                 if ((node as Element).tagName === 'A') {
                   const dataType = (node as Element).getAttribute('data-type');
-                  if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+                  if (dataType && dataType.split(' ').includes(filterType)) {
                     return NodeFilter.FILTER_ACCEPT;
                   }
                 }
@@ -382,7 +382,7 @@ async function genList(): Promise<void> {
               acceptNode: function(node: Node) {
                 if ((node as Element).tagName === 'A') {
                   const dataType = (node as Element).getAttribute('data-type');
-                  if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+                  if (dataType && dataType.split(' ').includes(filterType)) {
                     return NodeFilter.FILTER_ACCEPT;
                   }
                 }
