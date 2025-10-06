@@ -302,8 +302,11 @@ async function genList(): Promise<void> {
       {
         acceptNode: function(node: Node) {
           // 使用 SHOW_ELEMENT 时，node 一定是 Element 类型，直接访问属性
-          if ((node as Element).tagName === 'SPAN' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
-            return NodeFilter.FILTER_ACCEPT;
+          if ((node as Element).tagName === 'SPAN') {
+            const dataType = (node as Element).getAttribute('data-type');
+            if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
           }
           return NodeFilter.FILTER_SKIP;
         }
@@ -342,8 +345,11 @@ async function genList(): Promise<void> {
             NodeFilter.SHOW_ELEMENT,
             {
               acceptNode: function(node: Node) {
-                if ((node as Element).tagName === 'A' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
-                  return NodeFilter.FILTER_ACCEPT;
+                if ((node as Element).tagName === 'A') {
+                  const dataType = (node as Element).getAttribute('data-type');
+                  if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+                    return NodeFilter.FILTER_ACCEPT;
+                  }
                 }
                 return NodeFilter.FILTER_SKIP;
               }
@@ -374,8 +380,11 @@ async function genList(): Promise<void> {
             NodeFilter.SHOW_ELEMENT,
             {
               acceptNode: function(node: Node) {
-                if ((node as Element).tagName === 'A' && (node as Element).getAttribute('data-type')?.includes(filterType)) {
-                  return NodeFilter.FILTER_ACCEPT;
+                if ((node as Element).tagName === 'A') {
+                  const dataType = (node as Element).getAttribute('data-type');
+                  if (dataType && (dataType === filterType || dataType.split(' ').includes(filterType))) {
+                    return NodeFilter.FILTER_ACCEPT;
+                  }
                 }
                 return NodeFilter.FILTER_SKIP;
               }
