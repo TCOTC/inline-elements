@@ -2,9 +2,11 @@
   "name": "inline-elements",
   "version": "0.0.1",
   "type": "module",
+  "packageManager": "pnpm@11.4.0",
   "scripts": {
     "dev": "node scripts/dev-build.js --watch",
-    "build": "vite build && node scripts/build-package.js"
+    "build": "vite build && node scripts/build-package.js",
+    "push": "git push origin HEAD --tags"
   },
   "devDependencies": {
     "@types/node": "^24.6.2",
