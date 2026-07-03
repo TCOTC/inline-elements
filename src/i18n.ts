@@ -13,7 +13,7 @@ export const i18n: Record<string, Record<string, string>> = {
   // sup         上标
   // sub         下标
   // kbd         键盘
-  "zh_CN": {
+  "zh-CN": {
     "text-mark": "标记",
     "text-strong": "粗体",
     "text-tag": "标签",
@@ -35,7 +35,7 @@ export const i18n: Record<string, Record<string, string>> = {
     "noResultsMessage": "无查询结果",
     "errorMessage": "异常：无法获取到必要的挂件元素，挂件加载失败"
   },
-  "zh_CHT": {
+  "zh-TW": {
     "text-mark": "標記",
     "text-strong": "粗體",
     "text-tag": "標籤",
@@ -57,7 +57,7 @@ export const i18n: Record<string, Record<string, string>> = {
     "noResultsMessage": "無查詢結果",
     "errorMessage": "異常：無法獲取到必要的掛件元素，掛件加載失敗"
   },
-  "en_US": {
+  "en": {
     "text-mark": "Mark",
     "text-strong": "Bold",
     "text-tag": "Tag",

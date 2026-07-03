@@ -90,7 +90,7 @@ async function buildPackage() {
       'icon.png',
       'preview.png', 
       'README.md',
-      'README_zh_CN.md',
+      'README.zh-CN.md',
       'widget.json',
       'index.html'
     ]

@@ -61,8 +61,8 @@ const isWidgetBlockId = !!widgetBlockId && /^[0-9]{14}-[a-z0-9]{7}$/.test(widget
 
 // 设置语言
 const htmlElement = widgetBlock?.closest("html");
-let i18nType = htmlElement?.getAttribute("lang") || "en_US";
-if (!i18n[i18nType]) i18nType = "en_US";
+let i18nType = htmlElement?.getAttribute("lang") || "en";
+if (!i18n[i18nType]) i18nType = "en";
 document.documentElement.lang = i18nType;
 
 // 获取挂件内的各个元素
