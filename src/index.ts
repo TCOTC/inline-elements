@@ -9,7 +9,7 @@ To-dos:
 - [ ] 移除所有 console.log
 - [ ] 测试在移动端能否正常使用
 - [ ] 把主空间里使用到 widget-inline-extractor 挂件的地方，改为使用本挂件
-- [ ] 支持汇总带 颜色/背景色 的元素：需要多加一个下拉框，很多颜色
+- [ ] 支持汇总带 颜色/背景色 的元素：需要多加一个下拉框，很多颜色 https://github.com/TCOTC/inline-elements/issues/1
 - [ ] 在其他浏览器测试以上功能是否正常工作
 */
 
