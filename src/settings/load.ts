@@ -1,5 +1,6 @@
 import { WIDGET_ATTR_PREFIX } from "../config/constants";
 import type { WidgetContext } from "../context/types";
+import { sleep } from "../utils/util";
 import { persistSettings } from "./persist";
 import { SETTING_ATTR_DEFS, SETTING_KEYS, loadSettingAttr } from "./settingAttrs";
 
@@ -44,8 +45,4 @@ async function persistPendingDefaults(ctx: WidgetContext): Promise<void> {
       await sleep(ATTR_WRITE_RETRY_INTERVAL_MS);
     }
   }
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

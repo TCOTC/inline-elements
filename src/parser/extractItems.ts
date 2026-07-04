@@ -1,84 +1,123 @@
-import { trimText } from "../utils/text";
-import { createWalker } from "./createWalker";
+import { isWhitespaceOnly, trimText } from "../utils/text";
+import { sleep } from "../utils/util";
 import type { MergedItem, WidgetContext } from "../context/types";
 
+/** 单轮时间片长度（毫秒），到期后让出主线程 */
+const TIME_SLICE_MS = 8;
+/** 解析最长耗时（毫秒），超时后返回已解析的部分结果 */
+const MAX_PARSE_MS = 10_000;
+/** 每隔多少个节点检查一次耗时与是否让出主线程 */
+const PERF_CHECK_INTERVAL = 64;
+
 /**
- * 异步遍历、相邻合并、batch 让出主线程
+ * 读取 span 文本；无子元素时直接取文本节点，避免 textContent 聚合子树
+ */
+function getSpanText(element: Element): string {
+  if (element.childElementCount === 0) {
+    const first = element.firstChild;
+    if (first?.nodeType === Node.TEXT_NODE) {
+      return trimText(first.nodeValue);
+    }
+    if (!first) {
+      return "";
+    }
+  }
+  return trimText(element.textContent);
+}
+
+/**
+ * 检测两元素之间是否仅隔空白字符，并返回合并时应插入的间隔文本
+ * @returns `null` 不可合并；`""` 紧邻合并；否则为中间空白字符的原文
+ */
+function getMergeGap(last: Element, current: Element): string | null {
+  let node: Node | null = last.nextSibling;
+  let gap = "";
+  while (node) {
+    if (node === current) {
+      return gap;
+    }
+    if (node.nodeType === Node.TEXT_NODE) {
+      const content = node.textContent ?? "";
+      if (!isWhitespaceOnly(content)) {
+        return null;
+      }
+      gap += content;
+      node = node.nextSibling;
+      continue;
+    }
+    return null;
+  }
+  return null;
+}
+
+/**
+ * 异步遍历、相邻合并、时间片让出主线程
  */
 export async function extractItems(docHTML: string, ctx: WidgetContext): Promise<MergedItem[]> {
-  // 使用文档片段高性能解析 DOM，使用 TreeWalker 遍历并合并相邻的元素的文本，生成列表项
   const parser = new DOMParser();
   const doc = parser.parseFromString(docHTML, "text/html");
+  const { filterType } = ctx.settings;
 
-  // 合并相邻的元素的文本内容（忽略元素之间的空白字符）
+  // 合并相邻元素的文本；中间仅隔空白字符时原样保留间隔（如 mark 与 mark strong 之间）
   const mergedItems: MergedItem[] = [];
   let currentItem: MergedItem | null = null;
   let lastElement: Element | null = null;
   let processedCount = 0;
-  const maxProcessCount = 10000; // 限制最大处理元素数量
+  let visitedCount = 0;
+  const parseStartTime = performance.now();
+  let sliceStartTime = parseStartTime;
+  let cachedBlock: Element | null = null;
+  let cachedBlockId: string | undefined;
 
-  const walker = createWalker(doc, ctx.settings);
-
-  // 使用异步处理避免界面卡死
-  let element: Element | null;
-  let batchCount = 0;
-  const batchSize = 50; // 每批处理 50 个元素
-
-  while (element = walker.nextNode() as Element) {
-    // 检查是否超过最大处理数量
-    if (processedCount >= maxProcessCount) {
-      console.warn(`inline-elements widget: Reached the maximum processing limit (${maxProcessCount}), stopping processing`);
-      break;
+  const getBlockId = (element: Element): string | undefined => {
+    if (cachedBlock?.contains(element)) {
+      return cachedBlockId;
     }
+    cachedBlock = element.closest("[data-node-id]");
+    cachedBlockId = cachedBlock?.getAttribute("data-node-id") ?? undefined;
+    return cachedBlockId;
+  };
 
-    const text = trimText(element.textContent);
-    if (!text) {
-      continue;
-    }
-
-    // 查找包含当前内联元素的块元素（通过 data-node-id 属性）
-    const blockElement = element.closest("[data-node-id]");
-    if (!blockElement) {
-      continue;
-    }
-
-    const blockId = blockElement.getAttribute("data-node-id");
-    if (!blockId) {
-      continue;
-    }
-
-    // 检查当前元素是否与上一个元素相邻（TreeWalker 按文档顺序遍历）
-    const isAdjacent = currentItem !== null && lastElement !== null &&
-      lastElement.parentElement === element.parentElement &&
-      lastElement.nextSibling === element;
-
-    if (isAdjacent) {
-      // 如果相邻，则合并文本
-      currentItem!.text += text;
-    } else {
-      // 保存上一个项（如果存在）
-      if (currentItem) {
-        mergedItems.push(currentItem);
+  // data-type 可为空格分隔的多类型，~= 与 split + includes 语义一致
+  const spans = doc.querySelectorAll(`span[data-type~="${CSS.escape(filterType)}"]`);
+  for (const element of spans) {
+    visitedCount++;
+    if (visitedCount % PERF_CHECK_INTERVAL === 0) {
+      const now = performance.now();
+      if (now - parseStartTime >= MAX_PARSE_MS) {
+        // 超时后返回已解析的部分结果
+        console.warn(
+          `inline-elements widget: Reached the maximum parsing time (${MAX_PARSE_MS}ms), ` +
+          `stopping after ${processedCount} elements`
+        );
+        break;
       }
-      // 开始新项
-      currentItem = { text, blockId };
+      if (now - sliceStartTime >= TIME_SLICE_MS) {
+        await sleep();
+        sliceStartTime = performance.now();
+      }
     }
 
-    lastElement = element;
-    processedCount++;
-    batchCount++;
-
-    // 每处理一批元素后，让出控制权给浏览器
-    if (batchCount >= batchSize) {
-      batchCount = 0;
-      // 使用 requestIdleCallback 或 setTimeout 让出控制权
-      await new Promise(resolve => {
-        if (window.requestIdleCallback) {
-          window.requestIdleCallback(() => resolve(undefined));
+    const text = getSpanText(element);
+    if (text) {
+      const blockId = getBlockId(element);
+      if (blockId) {
+        const gap = lastElement ? getMergeGap(lastElement, element) : null;
+        if (gap === null) {
+          // 保存上一个项（如果存在）
+          if (currentItem) {
+            mergedItems.push(currentItem);
+          }
+          // 开始新项
+          currentItem = { text, blockId };
         } else {
-          setTimeout(resolve, 0);
+          // 如果相邻，则合并文本
+          currentItem!.text += gap + text;
         }
-      });
+
+        lastElement = element;
+        processedCount++;
+      }
     }
   }
 
@@ -89,3 +128,59 @@ export async function extractItems(docHTML: string, ctx: WidgetContext): Promise
 
   return mergedItems;
 }
+
+// 旧实现（TreeWalker，仅作参考）：
+// 遍历 body 下所有元素，在 acceptNode 中过滤 SPAN；约 20KB / 198 个 mark 时仅收集阶段约慢 16×。
+//
+// const walker = doc.createTreeWalker(
+//   doc.body,
+//   NodeFilter.SHOW_ELEMENT,
+//   {
+//     acceptNode: function (node: Node) {
+//       if ((node as Element).tagName === "SPAN") {
+//         const dataType = (node as Element).getAttribute("data-type");
+//         if (dataType && dataType.split(" ").includes(filterType)) {
+//           return NodeFilter.FILTER_ACCEPT;
+//         }
+//       }
+//       return NodeFilter.FILTER_SKIP;
+//     },
+//   }
+// );
+//
+// let element: Element | null;
+// while ((element = walker.nextNode() as Element)) {
+//   visitedCount++;
+//   if (visitedCount % PERF_CHECK_INTERVAL === 0) {
+//     const now = performance.now();
+//     if (now - parseStartTime >= MAX_PARSE_MS) {
+//       console.warn(
+//         `inline-elements widget: Reached the maximum parsing time (${MAX_PARSE_MS}ms), ` +
+//         `stopping after ${processedCount} elements`
+//       );
+//       break;
+//     }
+//     if (now - sliceStartTime >= TIME_SLICE_MS) {
+//       await sleep();
+//       sliceStartTime = performance.now();
+//     }
+//   }
+//
+//   const text = getSpanText(element);
+//   if (text) {
+//     const blockId = getBlockId(element);
+//     if (blockId) {
+//       const gap = lastElement ? getMergeGap(lastElement, element) : null;
+//       if (gap === null) {
+//         if (currentItem) {
+//           mergedItems.push(currentItem);
+//         }
+//         currentItem = { text, blockId };
+//       } else {
+//         currentItem!.text += gap + text;
+//       }
+//       lastElement = element;
+//       processedCount++;
+//     }
+//   }
+// }
