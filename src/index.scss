@@ -1,3 +1,7 @@
+html {
+  scrollbar-width: thin; // 细滚动条
+}
+
 body {
   margin: 8px;
   font-size: var(--b3-font-size-editor);
@@ -16,7 +20,7 @@ body {
   overflow-y: hidden;        // 隐藏纵向滚动条
   white-space: nowrap;       // 防止子元素换行
   padding: 4px 0;            // 上下内边距，为滚动条留出空间
-  scrollbar-width: thin;     // 细滚动条（Firefox）
+  scrollbar-width: thin;     // 细滚动条
   // scrollbar-gutter: stable; // 不知道为什么无效
   
   // 将整个容器垂直翻转，这样滚动条就会在上方
