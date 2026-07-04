@@ -19,7 +19,7 @@ body {
   overflow-x: auto;          // 横向滚动
   overflow-y: hidden;        // 隐藏纵向滚动条
   white-space: nowrap;       // 防止子元素换行
-  padding: 4px 0;            // 上下内边距，为滚动条留出空间
+  padding: 4px 1px;          // 上下内边距，为滚动条留出空间；左右内边距，为 box-shadow 留出空间
   scrollbar-width: thin;     // 细滚动条
   // scrollbar-gutter: stable; // 不知道为什么无效
   
@@ -33,48 +33,58 @@ body {
 }
 
 /* ==================== 下拉选择框样式 ======================= */
-select {
-  // 参考了原生的 b3-select 样式
+// 对齐思源 app/src/assets/scss/component/_select.scss
+#controlPanel select {
   width: auto;     // 自适应宽度
   min-width: 75px; // 最小宽度（JS 设置文案之前的下拉框宽度很小，用于视觉防抖）
-  height: 30px;
+  height: 28px;
   flex-shrink: 0;  // 防止在 flex 容器中收缩
-  outline: none;
-  border: 1px solid var(--b3-theme-on-surface);
+  border: 0;
   border-radius: var(--b3-border-radius);
   padding: 4px 26px 4px 8px;
+  box-sizing: border-box;
   line-height: 20px;
   color: var(--b3-theme-on-background);
-  background: var(--b3-select-background);
-  background-color: var(--b3-theme-background);
-  transition: border 120ms 0ms cubic-bezier(0, 0, 0.2, 1),background-color .2s cubic-bezier(0, 0, 0.2, 1) 0ms;
+  transition: box-shadow 120ms 0ms cubic-bezier(0, 0, .2, 1), background-color .2s cubic-bezier(0, 0, .2, 1) 0ms;
   font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--b3-border-color);
+  background: var(--b3-select-background);
   appearance: none;
-  overflow: hidden !important;
   cursor: pointer;
+  overflow: hidden; // iphonex
 
-  &:hover,
-  &:focus {
-    border-color: var(--b3-theme-on-background); // 悬停或聚焦时边框颜色变深
+  &:hover {
+    box-shadow: inset 0 0 0 1px var(--b3-border-color), 0 0 0 .6px var(--b3-border-color);
     background-color: var(--b3-theme-surface);
+  }
+
+  &:focus,
+  &:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--b3-theme-primary-light), 0 0 0 .6px var(--b3-theme-primary-lighter);
+  }
+
+  &:focus-visible {
+    outline: none;
   }
 }
 
 /* ==================== 刷新按钮样式 ========================= */
 #refreshList {
-  width: 30px;
-  height: 30px;
-  outline: none;
-  border: 1px solid var(--b3-theme-on-surface);
+  width: 28px;
+  height: 28px;
+  border: 0;
   border-radius: var(--b3-border-radius);
+  box-sizing: border-box;
+  padding: 0;
   color: var(--b3-theme-on-background);
-  background-color: var(--b3-theme-background);
+  background-color: var(--b3-menu-background);
   display: flex;
   align-items: center;       // 垂直居中对齐
   justify-content: center;   // 水平居中对齐
-  transition: all 0.2s ease; // 过渡动画
+  transition: box-shadow 120ms 0ms cubic-bezier(0, 0, .2, 1), background-color .2s cubic-bezier(0, 0, .2, 1) 0ms;
   cursor: pointer;
   flex-shrink: 0;            // 防止在 flex 容器中收缩
+  box-shadow: inset 0 0 0 1px var(--b3-border-color);
 
   svg {
     width: 16px;
@@ -83,9 +93,17 @@ select {
   }
 
   &:hover {
-    // 悬停时颜色变深
-    border-color: var(--b3-theme-on-background);
+    box-shadow: inset 0 0 0 1px var(--b3-border-color), 0 0 0 .6px var(--b3-border-color);
     background-color: var(--b3-theme-surface);
+  }
+
+  &:focus,
+  &:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--b3-theme-primary-light), 0 0 0 .6px var(--b3-theme-primary-lighter);
+  }
+
+  &:focus-visible {
+    outline: none;
   }
 
   &:active {
