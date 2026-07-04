@@ -1,4 +1,4 @@
-import type { WidgetContext } from "../../context/types";
+import type { WidgetContext } from "../context/types";
 
 /**
  * 导出图片/PDF 时调整 iframe 尺寸

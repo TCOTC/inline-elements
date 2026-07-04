@@ -1,4 +1,4 @@
-import { WIDGET_ATTR_PREFIX } from "../config/constants";
+import { WIDGET_ATTR_PREFIX } from "../util";
 
 /**
  * 设置块属性（用于保存挂件块配置）

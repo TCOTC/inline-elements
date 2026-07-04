@@ -1,5 +1,5 @@
 import { i18n } from "../i18n";
-import { WIDGET_BLOCK_ID_PATTERN } from "../config/constants";
+import { WIDGET_BLOCK_ID_PATTERN } from "../util";
 import { showError } from "../ui/message";
 import { copyThemeStyle } from "../theme/copyThemeStyle";
 import type { RuntimeMode, WidgetContext, WidgetSettings } from "./types";

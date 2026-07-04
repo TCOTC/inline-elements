@@ -1,13 +1,4 @@
-/**
- * 转义 HTML，避免错误信息注入 DOM
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+import { escapeHtml } from "../util";
 
 /**
  * 将异常格式化为面向用户的文案

@@ -1,6 +1,6 @@
-import { WIDGET_ATTR_PREFIX } from "../config/constants";
+import { WIDGET_ATTR_PREFIX } from "../util";
 import type { WidgetContext } from "../context/types";
-import { sleep } from "../utils/util";
+import { sleep } from "../util";
 import { persistSettings } from "./persist";
 import { SETTING_ATTR_DEFS, SETTING_KEYS, loadSettingAttr } from "./settingAttrs";
 

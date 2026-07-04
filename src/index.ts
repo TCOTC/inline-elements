@@ -17,11 +17,11 @@ import "./index.scss";
 import { initI18n } from "./i18n";
 import { createContext } from "./context/createContext";
 import { loadSettings } from "./settings/load";
-import { genList } from "./list/genList";
+import { genList } from "./render/genList";
 import { initControls } from "./ui/initControls";
 import { bindEvents } from "./ui/bindEvents";
 import { formatError, showError } from "./ui/message";
-import { layoutExportIframe } from "./modes/layout/exportIframe";
+import { layoutExportIframe } from "./render/exportIframe";
 import { isExportMode } from "./context/types";
 
 // 用函数包裹，方便直接 return

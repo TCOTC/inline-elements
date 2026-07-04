@@ -1,7 +1,7 @@
 import { copyThemeStyle } from "../theme/copyThemeStyle";
 import { getDocHTML } from "../parser/getDoc";
 import { extractItems } from "../parser/extractItems";
-import { renderList } from "../modes/renderList";
+import { renderList } from "./renderList";
 import type { WidgetContext } from "../context/types";
 
 /**

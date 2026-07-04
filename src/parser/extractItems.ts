@@ -1,5 +1,4 @@
-import { isWhitespaceOnly, trimText } from "../utils/text";
-import { sleep } from "../utils/util";
+import { isWhitespaceOnly, sleep, trimText } from "../util";
 import type { MergedItem, WidgetContext } from "../context/types";
 
 /** 单轮时间片长度（毫秒），到期后让出主线程 */
