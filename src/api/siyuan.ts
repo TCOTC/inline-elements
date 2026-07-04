@@ -9,7 +9,7 @@ export async function setBlockAttrs(blockId: string | null, attrs: Record<string
     return;
   }
   if (!blockId) {
-    console.warn('inline-elements widget: Failed to setBlockAttrs, blockId is null');
+    console.warn("inline-elements widget: Failed to setBlockAttrs, blockId is null");
     return;
   }
 
@@ -20,10 +20,10 @@ export async function setBlockAttrs(blockId: string | null, attrs: Record<string
   }
 
   try {
-    const response = await fetch('/api/attr/setBlockAttrs', {
-      method: 'POST',
+    const response = await fetch("/api/attr/setBlockAttrs", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id: blockId,
@@ -41,7 +41,7 @@ export async function setBlockAttrs(blockId: string | null, attrs: Record<string
     }
     return result;
   } catch (error) {
-    console.warn('inline-elements widget: Failed to setBlockAttrs, error:', error);
+    console.warn("inline-elements widget: Failed to setBlockAttrs, error:", error);
     throw error;
   }
 }
@@ -79,11 +79,13 @@ export async function querySQL(sql: string) {
 /**
  * 获取块 DOM
  * @param blockId 块 ID
+ * @param withEmbed 是否展开嵌入块内容
  * @returns 块 DOM
  */
-export async function getBlockDOM(blockId: string) {
+export async function getBlockDOM(blockId: string, withEmbed: boolean) {
+  const api = withEmbed ? "/api/block/getBlockDOMWithEmbed" : "/api/block/getBlockDOM";
   try {
-    const response = await fetch("/api/block/getBlockDOM", {
+    const response = await fetch(api, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,33 +95,12 @@ export async function getBlockDOM(blockId: string) {
       })
     });
     const result = await response.json();
+    if (result.code !== 0) {
+      throw new Error(result.msg || "getBlockDOM failed");
+    }
     return result;
   } catch (error) {
     console.warn("inline-elements widget: Failed to getBlockDOM, error:", error);
-    throw error;
-  }
-}
-
-/**
- * 获取块预览 HTML
- * @param blockId 块 ID
- * @returns 预览 HTML
- */
-export async function getBlockPreview(blockId: string) {
-  try {
-    const response = await fetch("/api/export/preview", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: blockId
-      })
-    });
-    const result = await response.json();
-    return result;
-  } catch (error) {
-    console.warn("inline-elements widget: Failed to getBlockPreview, error:", error);
     throw error;
   }
 }

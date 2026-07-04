@@ -1,4 +1,4 @@
-import { getBlockDOM, getBlockPreview, querySQL } from "../api/siyuan";
+import { getBlockDOM, querySQL } from "../api/siyuan";
 import { i18n } from "../i18n";
 import { showMessage } from "../ui/message";
 import type { WidgetContext } from "../context/types";
@@ -32,7 +32,6 @@ export async function getDocHTML(ctx: WidgetContext): Promise<string> {
 
   const docId = await getDocId(widgetBlock, widgetBlockId);
 
-  // 根据 isEmbedBlocks 标志位选择不同的接口获取文档内容
   let docHTML: string;
 
   // 设置加载提示超时
@@ -45,15 +44,8 @@ export async function getDocHTML(ctx: WidgetContext): Promise<string> {
       throw new Error(i18n.docIdNotFoundMessage);
     }
 
-    if (isEmbedBlocks) {
-      // 包含嵌入块：使用预览接口获取完整的 HTML
-      const previewResult = await getBlockPreview(docId);
-      docHTML = previewResult.data.html;
-    } else {
-      // 不包含嵌入块：使用普通 DOM 接口
-      const docDOMResult = await getBlockDOM(docId);
-      docHTML = docDOMResult.data.dom;
-    }
+    const docDOMResult = await getBlockDOM(docId, isEmbedBlocks);
+    docHTML = docDOMResult.data.dom;
 
     // 检查 HTML 大小，如果过大则显示提示
     if (docHTML.length > 100000) { // 约 100KB

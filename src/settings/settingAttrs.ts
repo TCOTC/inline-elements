@@ -13,21 +13,21 @@ export type SettingAttrDefMap = {
   [K in SettingKey]: SettingAttrDef<K>;
 };
 
-// 通过 JS 生成 option 元素；按实际使用情况排一下序；两个接口获取到的行级元素格式不同
+// 通过 JS 生成 option 元素；按实际使用情况排一下序；行级元素均为编辑器 DOM 格式
 // mark        标记　　   <span data-type="mark">text</span>
 // strong      粗体　　   <span data-type="strong">text</span>
-// tag         标签　　   <span data-type="tag">&ZeroWidthSpace;text</span>                                           |  [x]  <em>#text#</em>
+// tag         标签　　   <span data-type="tag">&ZeroWidthSpace;text</span>
 // em	         斜体　　   <span data-type="em">text</span>
 // u           下划线　   <span data-type="u">text</span>
 // s           删除线　   <span data-type="s">text</span>
-// inline-memo 备注　　   <span data-type="inline-memo" data-inline-memo-content="memo">text</span>                   |  [x]  导出预览接口没有行级备注元素
-// a           超链接　   <span data-type="a" data-href="link">text</span>                                            |  [ ]  <a href="link" data-type="a">text</a>（块超链接跟块引用的一样）
-// block-ref   块引用　   <span data-type="block-ref" data-id="20250924233731-pl5p9zc" data-subtype="s">text</span>   |  [ ]  <a href="siyuan://blocks/20250924233731-pl5p9zc">text</a> // TODO: 这里在等 https://github.com/siyuan-note/siyuan/issues/16017 修改
-// code	       行级代码   <span data-type="code">&ZeroWidthSpace;text</span>                                          |  <span data-type="code">text</span>
+// inline-memo 备注　　   <span data-type="inline-memo" data-inline-memo-content="memo">text</span>
+// a           超链接　   <span data-type="a" data-href="link">text</span>
+// block-ref   块引用　   <span data-type="block-ref" data-id="20250924233731-pl5p9zc" data-subtype="s">text</span>
+// code	       行级代码   <span data-type="code">&ZeroWidthSpace;text</span>
 // inline-math 行级公式   <span data-type="inline-math">
 // sup         上标　　   <span data-type="sup">text</span>
 // sub         下标　　   <span data-type="sub">text</span>
-// kbd         键盘　　   <span data-type="kbd">&ZeroWidthSpace;text</span>                                           |  <span data-type="kbd">text</span>
+// kbd         键盘　　   <span data-type="kbd">&ZeroWidthSpace;text</span>
 
 export const SETTING_ATTR_DEFS = {
   // 当前选中的内联元素类型，默认为 "mark"（标记）
