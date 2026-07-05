@@ -5,6 +5,7 @@ To-dos:
 - [x] 支持在导出图片/PDF时使用：隐藏 iframe 边框、隐藏控制面板
 - [x] 测试在发布服务是否正常工作、不报错
 - [x] 暗黑模式的样式，需要从 iframe 外获取颜色变量实际值，genList 的时候也要刷新一次
+- [x] 导出图片/PDF 时将 iframe 块替换为无序列表块
 - [ ] 支持所有行级元素：两个接口获取到的行级元素格式不同，需要单独适配
 - [ ] 移除所有 console.log
 - [ ] 测试在移动端能否正常使用
@@ -17,14 +18,12 @@ import "./index.scss";
 import { initI18n } from "./i18n";
 import { createContext } from "./context/createContext";
 import { loadSettings } from "./settings/load";
-import { genList } from "./render/genList";
-import { initControls } from "./ui/initControls";
-import { bindEvents } from "./ui/bindEvents";
 import { formatError, showError } from "./ui/message";
-import { layoutExportIframe } from "./render/exportIframe";
-import { isExportMode } from "./context/types";
+import { runNormalMode } from "./genList/normal";
+import { genListPreview } from "./genList/preview";
+import { genListExportImg } from "./genList/export-img";
+import { genListExportPdf } from "./genList/export-pdf";
 
-// 用函数包裹，方便直接 return
 async function main(): Promise<void> {
   initI18n();
 
@@ -41,18 +40,19 @@ async function main(): Promise<void> {
   };
 
   try {
-    if (isExportMode(ctx.mode)) {
-      // TODO: 改成直接操作 DOM，把 IFrame 块替换成无序列表块，否则导出效果会比较差
-      // 先初始化才能获取到正确的元素高度
-      await genList(ctx);
-      layoutExportIframe(ctx);
-    } else {
-      initControls(ctx);
-      bindEvents(ctx, () => {
-        void genList(ctx).catch(handleError);
-      });
-
-      await genList(ctx);
+    switch (ctx.mode) {
+      case "normal":
+        await runNormalMode(ctx, handleError);
+        break;
+      case "preview":
+        await genListPreview(ctx);
+        break;
+      case "export-img":
+        await genListExportImg(ctx);
+        break;
+      case "export-pdf":
+        await genListExportPdf(ctx);
+        break;
     }
   } catch (error) {
     handleError(error);

@@ -9,20 +9,6 @@ const WHITESPACE_ONLY = /^[\s\u200B-\u200D\uFEFF\u2060]*$/;
 const TRIM_EDGE_START = /^[\s\u200B-\u200D\uFEFF\u2060]/;
 const TRIM_EDGE_END = /[\s\u200B-\u200D\uFEFF\u2060]$/;
 
-/** requestIdleCallback 最长等待时间（毫秒），超时后强制续跑 */
-const IDLE_CALLBACK_TIMEOUT_MS = 32;
-
-/**
- * 转义 HTML 特殊字符，避免用户内容注入 DOM
- */
-export function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 /**
  * 判断字符串是否仅包含空白字符（包括零宽字符）
  */
@@ -57,9 +43,20 @@ export function sleep(ms = 0): Promise<void> {
       return;
     }
     if (window.requestIdleCallback) {
-      window.requestIdleCallback(() => resolve(undefined), { timeout: IDLE_CALLBACK_TIMEOUT_MS });
+      window.requestIdleCallback(() => resolve(undefined), { timeout: 32 }); // 最长等待时间（毫秒），超时后强制续跑
     } else {
       setTimeout(resolve, 0);
     }
   });
+}
+
+/**
+ * 转义 HTML 特殊字符，避免用户内容注入 DOM
+ */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
