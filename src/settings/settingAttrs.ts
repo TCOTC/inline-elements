@@ -24,7 +24,7 @@ export type SettingAttrDefMap = {
 // a           超链接　   <span data-type="a" data-href="link">text</span>
 // block-ref   块引用　   <span data-type="block-ref" data-id="20250924233731-pl5p9zc" data-subtype="s">text</span>
 // code	       行级代码   <span data-type="code">&ZeroWidthSpace;text</span>
-// inline-math 行级公式   <span data-type="inline-math">
+// inline-math 行级公式   <span data-type="inline-math" data-subtype="math" data-content="latex">
 // sup         上标　　   <span data-type="sup">text</span>
 // sub         下标　　   <span data-type="sub">text</span>
 // kbd         键盘　　   <span data-type="kbd">&ZeroWidthSpace;text</span>

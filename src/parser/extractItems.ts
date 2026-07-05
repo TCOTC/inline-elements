@@ -56,6 +56,10 @@ export async function extractItems(docHTML: string, ctx: WidgetContext): Promise
   const parser = new DOMParser();
   const doc = parser.parseFromString(docHTML, "text/html");
   const { filterType } = ctx.settings;
+  // 行级公式的 LaTeX 在 data-content；循环外选定一次，避免每个元素重复分支
+  const getElementText = filterType === "inline-math"
+    ? (element: Element) => trimText(element.getAttribute("data-content"))
+    : getSpanText;
 
   // 合并相邻元素的文本；中间仅隔空白字符时原样保留间隔（如 mark 与 mark strong 之间）
   const mergedItems: MergedItem[] = [];
@@ -97,7 +101,7 @@ export async function extractItems(docHTML: string, ctx: WidgetContext): Promise
       }
     }
 
-    const text = getSpanText(element);
+    const text = getElementText(element);
     if (text) {
       const blockId = getBlockId(element);
       if (blockId) {
