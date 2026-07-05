@@ -81,13 +81,12 @@ function buildListHtml(
   const partCount = items.length + 2;
   const liParts = new Array<string>(partCount);
 
-  liParts[0] = `<div data-subtype="u" data-node-id="${listId}" data-type="NodeList" class="${listClass}">`;
-
   for (let i = 0; i < items.length; i++) {
     const content = buildListItemContent(parentDoc, items[i], useHashLinks);
     liParts[i + 1] = buildListItemHtml(itemBlockId, content);
   }
 
+  liParts[0] = `<div data-subtype="u" data-node-id="${listId}" data-type="NodeList" class="${listClass}">`;
   liParts[partCount - 1] = `<div class="protyle-attr" contenteditable="false"></div></div>`;
   return liParts.join("");
 }
@@ -96,7 +95,7 @@ function buildListHtml(
 const BLOCK_ID_SUFFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 /** 保留块 ID 的时间戳前缀，重新生成 7 位随机后缀 */
-function renewBlockIdSuffix(blockId: string): string {
+export function renewBlockIdSuffix(blockId: string): string {
   const dashIndex = blockId.indexOf("-");
   if (dashIndex === -1) {
     return blockId;
