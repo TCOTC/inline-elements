@@ -7,7 +7,7 @@ import { attrValueToSetting } from "../settings/settingAttrs";
  */
 export function bindEvents(ctx: WidgetContext, onRefresh: () => void): void {
   const { elements, settings } = ctx;
-  const { filterType, embedBlocks, refreshList } = elements;
+  const { filterType, embedBlocks, refreshList, contentList } = elements;
 
   // 行级元素类型
   filterType.addEventListener("change", function (): void {
@@ -27,5 +27,22 @@ export function bindEvents(ctx: WidgetContext, onRefresh: () => void): void {
   // 刷新按钮
   refreshList.addEventListener("click", function (): void {
     onRefresh();
+  });
+
+  // 列表项：走父窗口 open，以便思源拦截 siyuan:// 协议
+  contentList.addEventListener("click", function (event: MouseEvent): void {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+    const item = target.closest("[data-href]");
+    if (!item) {
+      return;
+    }
+    const href = item.getAttribute("data-href");
+    if (!href) {
+      return;
+    }
+    parent.window.open(href);
   });
 }

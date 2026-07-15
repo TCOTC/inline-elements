@@ -27,7 +27,7 @@ export function renderIframeList(ctx: WidgetContext, mergedItems: MergedItem[], 
     const item = mergedItems[i];
     const text = escapeHtml(item.text);
     parts[i] = useLinks
-      ? `<li><a href="siyuan://blocks/${escapeHtml(item.blockId)}">${text}</a></li>`
+      ? `<li><p data-href="siyuan://blocks/${escapeHtml(item.blockId)}">${text}</p></li>`
       : `<li>${text}</li>`;
   }
   contentList.innerHTML = parts.join("");

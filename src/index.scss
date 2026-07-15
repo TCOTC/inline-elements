@@ -121,9 +121,12 @@ body {
     color: var(--b3-theme-on-background);   // 文字颜色
     overflow-wrap: break-word;              // 长单词换行
 
-    a {
-      color: var(--b3-theme-on-background); // 链接文字颜色
-      text-decoration: none;                // 移除下划线
+    p {
+      margin: 0;
+    }
+
+    [data-href] {
+      cursor: pointer;
     }
   }
 }
