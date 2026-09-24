@@ -43,6 +43,21 @@
 - 列表项末尾可能显示 `*` 锚点链接，可跳转到文档中对应块（目标块须存在于导出预览页；嵌入块内的元素因块 ID 为临时生成，无法建立链接）
 - 无查询结果时移除挂件块
 
+### 主题适配
+
+挂件会把编辑器主题样式注入自身文档，第三方主题可以用挂件名限定选择器，避免影响其他挂件：
+
+- 挂件文档的 `html`、`body` 元素带有 `data-widget-name="inline-elements"` 属性
+- 编辑器主文档中的挂件块可按 iframe 地址区分
+
+```css
+/* 挂件文档内部 */
+html[data-widget-name="inline-elements"] #controlPanel { ... }
+
+/* 编辑器主文档中的挂件块 */
+[data-type="NodeWidget"] iframe[src^="/widgets/inline-elements/"] { ... }
+```
+
 ### 致谢
 
 感谢 [行内元素抓取](https://github.com/hqweay/widget-inline-extractor) 挂件的作者 [hqweay](https://github.com/hqweay) 为本项目提供了灵感。

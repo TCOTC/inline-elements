@@ -16,6 +16,7 @@ To-dos:
 
 import "./index.scss";
 import { initI18n } from "./i18n";
+import { markWidgetDocument } from "./util";
 import { createContext } from "./context/createContext";
 import { loadSettings } from "./settings/load";
 import { formatError, showError } from "./ui/message";
@@ -25,6 +26,9 @@ import { genListExportImg } from "./genList/export-img";
 import { genListExportPdf } from "./genList/export-pdf";
 
 async function main(): Promise<void> {
+  // 先写入挂件标识属性，注入主题样式后第三方主题即可据此适配本挂件
+  markWidgetDocument();
+
   initI18n();
 
   const ctx = await createContext();

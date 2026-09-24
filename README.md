@@ -43,6 +43,21 @@ This widget automatically adapts its display to the current runtime scenario. Se
 - List items may show a `*` anchor link at the end to jump to the corresponding block in the document (the target block must exist on the export preview page; elements inside embed blocks cannot be linked because their block IDs are temporarily generated)
 - Removes the widget block when there are no results
 
+### Theme Adaptation
+
+The widget injects the editor theme styles into its own document, so third-party themes can scope selectors by widget name without affecting other widgets:
+
+- The `html` and `body` elements of the widget document carry the `data-widget-name="inline-elements"` attribute
+- The widget block in the editor document can be distinguished by its iframe URL
+
+```css
+/* Inside the widget document */
+html[data-widget-name="inline-elements"] #controlPanel { ... }
+
+/* The widget block in the editor document */
+[data-type="NodeWidget"] iframe[src^="/widgets/inline-elements/"] { ... }
+```
+
 ### Acknowledgments
 
 Thanks to the author of the [widget-inline-extractor](https://github.com/hqweay/widget-inline-extractor) widget, [hqweay](https://github.com/hqweay), for inspiring this project.

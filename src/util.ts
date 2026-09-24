@@ -1,4 +1,6 @@
-export const WIDGET_ATTR_PREFIX = "custom-inline-elements-widget-"; // 挂件属性前缀
+export const WIDGET_NAME = "inline-elements"; // 挂件名，与挂件目录名、widget.json 的 name 一致
+export const WIDGET_ATTR_PREFIX = `custom-${WIDGET_NAME}-widget-`; // 挂件块属性前缀
+export const WIDGET_NAME_ATTR = "data-widget-name"; // 挂件文档上标识挂件名的属性，供第三方主题 CSS 适配
 
 // ID 应该是 20251005012849-g0wv4xn 这样的 14 位数字加横杠加 7 位随机字符，否则认为没有获取到正确的挂件块
 export const WIDGET_BLOCK_ID_PATTERN = /^[0-9]{14}-[a-z0-9]{7}$/;
@@ -59,4 +61,13 @@ export function escapeHtml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/**
+ * 在挂件文档的 html、body 元素上写入挂件标识属性
+ * 主题样式会注入挂件文档内部，第三方主题据此限定选择器的适用范围
+ */
+export function markWidgetDocument(): void {
+  document.documentElement.setAttribute(WIDGET_NAME_ATTR, WIDGET_NAME);
+  document.body.setAttribute(WIDGET_NAME_ATTR, WIDGET_NAME);
 }

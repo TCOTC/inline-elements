@@ -1,3 +1,4 @@
+import { markWidgetDocument } from "../util";
 import { isExportMode, isExportPDF, type RuntimeMode } from "../context/types";
 
 /**
@@ -11,6 +12,8 @@ export async function copyThemeStyle(htmlElement: HTMLElement, mode: RuntimeMode
   if (isExportMode(mode)) {
     document.body.classList.add("exportMode");
   }
+  // 同步 html、body 属性会移除挂件自身的标识属性，在此恢复
+  markWidgetDocument();
 
   const externalDefaultStyle = htmlElement.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
   const internalDefaultStyle = document.head.querySelector("#themeDefaultStyle") as HTMLLinkElement | null;
